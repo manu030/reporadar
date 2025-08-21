@@ -1,0 +1,43 @@
+{
+  "name": "reporadar",
+  "version": "1.0.0",
+  "description": "Daily GitHub trending analysis with AI-powered business ideas",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "init-db": "node scripts/init-db.js",
+    "daily-analysis": "node scripts/daily-analysis.js",
+    "test-scraper": "node scripts/test-scraper.js",
+    "test-analyzer": "node scripts/test-analyzer.js",
+    "test-mailer": "node scripts/test-mailer.js"
+  },
+  "dependencies": {
+    "next": "14.2.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sqlite3": "^5.1.6",
+    "openai": "^4.52.7",
+    "resend": "^3.4.0",
+    "cheerio": "^1.0.0-rc.12",
+    "axios": "^1.7.2",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.19",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "14.2.5",
+    "postcss": "^8.4.39",
+    "tailwindcss": "^3.4.6"
+  },
+  "keywords": [
+    "github",
+    "trending",
+    "ai",
+    "business-ideas",
+    "newsletter"
+  ],
+  "author": "RepoRadar Team",
+  "license": "MIT"
+}

@@ -1,0 +1,255 @@
+const Database = require('../lib/database');
+const GitHubScraper = require('../lib/scraper');
+const AIAnalyzer = require('../lib/analyzer');
+const Mailer = require('../lib/mailer');
+
+// Configurar dotenv con múltiples fallbacks
+try {
+  require('dotenv').config({ path: '.env.local' });
+} catch (error) {
+  console.log('No .env.local found, trying .env...');
+  try {
+    require('dotenv').config();
+  } catch (error2) {
+    console.log('No .env files found, using environment variables');
+  }
+}
+
+class DailyAnalysis {
+  constructor() {
+    this.db = new Database();
+    this.scraper = new GitHubScraper();
+    this.analyzer = new AIAnalyzer();
+    this.mailer = new Mailer();
+    this.today = new Date().toISOString().split('T')[0];
+  }
+
+  async run() {
+    const startTime = Date.now();
+    console.log(`🚀 Iniciando análisis diario - ${this.today}\n`);
+
+    try {
+      // 1. Inicializar base de datos
+      await this.initializeDatabase();
+
+      // 2. Scraping de GitHub trending
+      const scrapedRepos = await this.scrapeGitHub();
+
+      // 3. Filtrar repos ya procesados
+      const newRepos = await this.filterNewRepos(scrapedRepos);
+
+      if (newRepos.length === 0) {
+        console.log('✅ No hay nuevos repositorios para procesar hoy');
+        return this.buildResult(0, 0, 0, startTime);
+      }
+
+      // 4. Análisis con IA
+      const analysisResults = await this.analyzeRepos(newRepos);
+
+      // 5. Guardar en base de datos
+      const savedRepos = await this.saveResults(analysisResults);
+
+      // 6. Enviar newsletters
+      const emailStats = await this.sendNewsletters(analysisResults);
+
+      // 7. Estadísticas finales
+      return this.buildResult(savedRepos, analysisResults.length * 3, emailStats.sent, startTime);
+
+    } catch (error) {
+      console.error('❌ Error en análisis diario:', error.message);
+      throw error;
+    } finally {
+      await this.db.close();
+    }
+  }
+
+  async initializeDatabase() {
+    console.log('🗄️  Inicializando base de datos...');
+    await this.db.init();
+    console.log('✅ Base de datos lista\n');
+  }
+
+  async scrapeGitHub() {
+    console.log('🕷️  Scrapeando GitHub trending...');
+    const repos = await this.scraper.getTrendingRepos(5);
+    console.log(`✅ Encontrados ${repos.length} repositorios trending\n`);
+    return repos;
+  }
+
+  async filterNewRepos(repos) {
+    console.log('🔍 Filtrando repositorios nuevos...');
+    const newRepos = [];
+
+    for (const repo of repos) {
+      const isProcessed = await this.db.isRepoProcessedToday(repo.name, this.today);
+      if (!isProcessed) {
+        newRepos.push(repo);
+      }
+    }
+
+    console.log(`✅ ${newRepos.length} repositorios nuevos para procesar\n`);
+    return newRepos;
+  }
+
+  async analyzeRepos(repos) {
+    console.log('🤖 Iniciando análisis con IA...');
+    const results = await this.analyzer.batchAnalyzeRepositories(repos);
+    
+    const successCount = results.filter(r => r.success).length;
+    console.log(`✅ Análisis completado: ${successCount}/${repos.length} exitosos\n`);
+    
+    return results;
+  }
+
+  async saveResults(analysisResults) {
+    console.log('💾 Guardando resultados en base de datos...');
+    let savedCount = 0;
+
+    for (const result of analysisResults) {
+      try {
+        // Guardar repositorio
+        const repoResult = await this.db.addProcessedRepo({
+          name: result.repo.name,
+          url: result.repo.url,
+          description: result.repo.description,
+          stars: result.repo.stars,
+          language: result.repo.language,
+          date: this.today
+        });
+
+        // Si el repo se insertó correctamente, guardar ideas
+        if (repoResult.changes > 0) {
+          // Usar el ID retornado por la inserción
+          const repoId = repoResult.id;
+          if (repoId) {
+            await this.db.addIdeas(repoId, result.ideas, this.today);
+            savedCount++;
+          }
+        } else {
+          // Si el repo ya existía, obtener su ID
+          const existingRepo = await this.db.get(
+            'SELECT id FROM processed_repos WHERE repo_name = ? AND processed_date = ?',
+            [result.repo.name, this.today]
+          );
+          
+          if (existingRepo) {
+            await this.db.addIdeas(existingRepo.id, result.ideas, this.today);
+            savedCount++;
+          }
+        }
+
+      } catch (error) {
+        console.error(`❌ Error guardando ${result.repo.name}:`, error.message);
+      }
+    }
+
+    console.log(`✅ Guardados ${savedCount} repositorios con sus ideas\n`);
+    return savedCount;
+  }
+
+  async sendNewsletters(analysisResults) {
+    console.log('📧 Enviando newsletters bilingües...');
+    
+    // Use the new multilingual newsletter method
+    const emailStats = await this.mailer.sendDailyNewslettersToAll(analysisResults, this.db);
+    
+    if (emailStats.total.sent === 0) {
+      console.log('📧 No hay usuarios suscritos');
+      return { sent: 0, failed: 0 };
+    }
+    
+    console.log(`✅ Newsletters enviados: ${emailStats.total.sent} total (${emailStats.es.sent} ES, ${emailStats.en.sent} EN)\n`);
+    return emailStats.total;
+  }
+
+  buildResult(processedRepos, generatedIdeas, emailsSent, startTime) {
+    const executionTime = Math.round((Date.now() - startTime) / 1000);
+    
+    const result = {
+      success: true,
+      date: this.today,
+      processed_repos: processedRepos,
+      generated_ideas: generatedIdeas,
+      emails_sent: emailsSent,
+      execution_time: `${executionTime}s`
+    };
+
+    console.log('📊 RESUMEN DEL ANÁLISIS DIARIO:');
+    console.log(`   Fecha: ${result.date}`);
+    console.log(`   Repositorios procesados: ${result.processed_repos}`);
+    console.log(`   Ideas generadas: ${result.generated_ideas}`);
+    console.log(`   Emails enviados: ${result.emails_sent}`);
+    console.log(`   Tiempo de ejecución: ${result.execution_time}`);
+    console.log('✅ Análisis diario completado exitosamente');
+
+    return result;
+  }
+
+  // Método para ejecutar análisis manual (testing)
+  async runTest() {
+    console.log('🧪 Ejecutando análisis en modo TEST\n');
+    
+    // En modo test, usar solo 2 repos
+    this.scraper.getTrendingRepos = () => this.scraper.getFallbackRepos(2);
+    
+    return await this.run();
+  }
+
+  // Método para limpiar datos de testing
+  async cleanup() {
+    console.log('🧹 Limpiando datos de test...');
+    
+    await this.db.connect();
+    
+    // Eliminar datos del día actual si es testing
+    await this.db.run('DELETE FROM ideas WHERE generated_date = ?', [this.today]);
+    await this.db.run('DELETE FROM processed_repos WHERE processed_date = ?', [this.today]);
+    
+    console.log('✅ Datos de test limpiados');
+    await this.db.close();
+  }
+
+  // Estadísticas del sistema
+  async getStats() {
+    await this.db.connect();
+    
+    const userCount = await this.db.getUserCount();
+    const repoCount = await this.db.getProcessedRepoCount();
+    const latestIdeas = await this.db.getLatestIdeas();
+    
+    await this.db.close();
+    
+    return {
+      total_subscribers: userCount,
+      total_repos_processed: repoCount,
+      latest_analysis_date: latestIdeas.length > 0 ? latestIdeas[0].processed_date : null,
+      latest_repos_count: latestIdeas.length
+    };
+  }
+}
+
+async function main() {
+  const analysis = new DailyAnalysis();
+  
+  try {
+    // Verificar si es ejecución de test
+    const isTest = process.argv.includes('--test');
+    
+    if (isTest) {
+      await analysis.runTest();
+    } else {
+      await analysis.run();
+    }
+    
+  } catch (error) {
+    console.error('💥 Análisis diario falló:', error.message);
+    process.exit(1);
+  }
+}
+
+// Ejecutar si es llamado directamente
+if (require.main === module) {
+  main();
+}
+
+module.exports = DailyAnalysis;
