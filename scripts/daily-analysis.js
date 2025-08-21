@@ -24,36 +24,44 @@ class DailyAnalysis {
     this.today = new Date().toISOString().split('T')[0];
   }
 
-  async run() {
+  async run(locale = null, forceAnalysis = false) {
     const startTime = Date.now();
-    console.log(`🚀 Iniciando análisis diario - ${this.today}\n`);
+    console.log(`🚀 Iniciando análisis diario - ${this.today}${locale ? ` (${locale.toUpperCase()})` : ''}\n`);
 
     try {
       // 1. Inicializar base de datos
       await this.initializeDatabase();
 
-      // 2. Scraping de GitHub trending
-      const scrapedRepos = await this.scrapeGitHub();
+      let analysisResults;
+      let savedRepos = 0;
 
-      // 3. Filtrar repos ya procesados
-      const newRepos = await this.filterNewRepos(scrapedRepos);
+      // Check if analysis already exists for today
+      const existingRepos = await this.db.getProcessedReposForDate(this.today);
+      const hasAnalysisToday = existingRepos.length > 0;
 
-      if (newRepos.length === 0) {
-        console.log('✅ No hay nuevos repositorios para procesar hoy');
-        return this.buildResult(0, 0, 0, startTime);
+      if (hasAnalysisToday && !forceAnalysis) {
+        console.log('📊 Usando análisis existente del día...');
+        
+        // Get existing analysis results
+        analysisResults = await this.getExistingAnalysis();
+        
+        if (analysisResults.length === 0) {
+          console.log('⚠️ No se encontraron resultados existentes, ejecutando análisis completo...');
+          analysisResults = await this.runFullAnalysis();
+          savedRepos = analysisResults.length;
+        }
+      } else {
+        console.log('🔄 Ejecutando análisis completo...');
+        analysisResults = await this.runFullAnalysis();
+        savedRepos = analysisResults.length;
       }
 
-      // 4. Análisis con IA
-      const analysisResults = await this.analyzeRepos(newRepos);
-
-      // 5. Guardar en base de datos
-      const savedRepos = await this.saveResults(analysisResults);
-
-      // 6. Enviar newsletters
-      const emailStats = await this.sendNewsletters(analysisResults);
+      // 6. Enviar newsletters (solo para el locale especificado)
+      const emailStats = await this.sendNewsletters(analysisResults, locale);
 
       // 7. Estadísticas finales
-      return this.buildResult(savedRepos, analysisResults.length * 3, emailStats.sent, startTime);
+      const emailsSent = typeof emailStats.sent !== 'undefined' ? emailStats.sent : emailStats.total?.sent || 0;
+      return this.buildResult(savedRepos, analysisResults.length * 3, emailsSent, startTime);
 
     } catch (error) {
       console.error('❌ Error en análisis diario:', error.message);
@@ -61,6 +69,42 @@ class DailyAnalysis {
     } finally {
       await this.db.close();
     }
+  }
+
+  async runFullAnalysis() {
+    // 2. Scraping de GitHub trending
+    const scrapedRepos = await this.scrapeGitHub();
+
+    // 3. Filtrar repos ya procesados
+    const newRepos = await this.filterNewRepos(scrapedRepos);
+
+    if (newRepos.length === 0) {
+      console.log('✅ No hay nuevos repositorios para procesar hoy');
+      return [];
+    }
+
+    // 4. Análisis con IA
+    const analysisResults = await this.analyzeRepos(newRepos);
+
+    // 5. Guardar en base de datos
+    await this.saveResults(analysisResults);
+
+    return analysisResults;
+  }
+
+  async getExistingAnalysis() {
+    const repos = await this.db.getLatestIdeas();
+    return repos.map(repo => ({
+      repo: {
+        name: repo.repo_name,
+        url: repo.repo_url,
+        description: repo.repo_description,
+        stars: repo.stars,
+        language: repo.language
+      },
+      ideas: repo.ideas,
+      success: true
+    }));
   }
 
   async initializeDatabase() {
@@ -147,19 +191,32 @@ class DailyAnalysis {
     return savedCount;
   }
 
-  async sendNewsletters(analysisResults) {
-    console.log('📧 Enviando newsletters bilingües...');
-    
-    // Use the new multilingual newsletter method
-    const emailStats = await this.mailer.sendDailyNewslettersToAll(analysisResults, this.db);
-    
-    if (emailStats.total.sent === 0) {
-      console.log('📧 No hay usuarios suscritos');
-      return { sent: 0, failed: 0 };
+  async sendNewsletters(analysisResults, locale = null) {
+    if (locale) {
+      console.log(`📧 Enviando newsletters para ${locale.toUpperCase()}...`);
+      const emailStats = await this.mailer.sendDailyNewsletterToLocale(analysisResults, this.db, locale);
+      
+      if (emailStats.sent === 0) {
+        console.log(`📧 No hay usuarios suscritos en ${locale}`);
+        return { sent: 0, failed: 0 };
+      }
+      
+      console.log(`✅ Newsletters enviados: ${emailStats.sent} (${locale.toUpperCase()})\n`);
+      return emailStats;
+    } else {
+      console.log('📧 Enviando newsletters bilingües...');
+      
+      // Use the new multilingual newsletter method
+      const emailStats = await this.mailer.sendDailyNewslettersToAll(analysisResults, this.db);
+      
+      if (emailStats.total.sent === 0) {
+        console.log('📧 No hay usuarios suscritos');
+        return { sent: 0, failed: 0 };
+      }
+      
+      console.log(`✅ Newsletters enviados: ${emailStats.total.sent} total (${emailStats.es.sent} ES, ${emailStats.en.sent} EN)\n`);
+      return emailStats.total;
     }
-    
-    console.log(`✅ Newsletters enviados: ${emailStats.total.sent} total (${emailStats.es.sent} ES, ${emailStats.en.sent} EN)\n`);
-    return emailStats.total;
   }
 
   buildResult(processedRepos, generatedIdeas, emailsSent, startTime) {

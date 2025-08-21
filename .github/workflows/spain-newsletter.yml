@@ -1,13 +1,19 @@
-name: Daily Repository Analysis
+name: Spain Newsletter (8 AM CET)
 
 on:
   schedule:
-    # Monday, Wednesday, Friday at 4:00 AM UTC (5 AM CET) - DEPRECATED, use spain/usa workflows
-    - cron: '0 4 * * 1,3,5'
+    # Monday, Wednesday, Friday at 7:00 AM UTC (8:00 AM CET)
+    - cron: '0 7 * * 1,3,5'
   workflow_dispatch: # Allow manual trigger
+    inputs:
+      force_analysis:
+        description: 'Force new analysis even if already done today'
+        required: false
+        default: 'false'
+        type: boolean
 
 jobs:
-  analyze-and-send:
+  spain-newsletter:
     runs-on: ubuntu-latest
     
     steps:
@@ -26,17 +32,18 @@ jobs:
       - name: Initialize database
         run: npm run init-db
         
-      - name: Run daily analysis
-        run: npm run daily-analysis
+      - name: Run Spain newsletter
+        run: npm run spain-newsletter
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
           NEXT_PUBLIC_BASE_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}
+          FORCE_ANALYSIS: ${{ inputs.force_analysis }}
           
       - name: Upload database artifact
         uses: actions/upload-artifact@v4
         with:
-          name: database-${{ github.run_number }}
+          name: spain-database-${{ github.run_number }}
           path: data/database.sqlite
           retention-days: 30

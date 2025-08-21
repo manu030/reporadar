@@ -11,12 +11,17 @@
     "daily-analysis": "node scripts/daily-analysis.js",
     "test-scraper": "node scripts/test-scraper.js",
     "test-analyzer": "node scripts/test-analyzer.js",
-    "test-mailer": "node scripts/test-mailer.js"
+    "test-mailer": "node scripts/test-mailer.js",
+    "test-cron": "node scripts/test-cron.js",
+    "spain-newsletter": "node scripts/spain-newsletter.js",
+    "usa-newsletter": "node scripts/usa-newsletter.js"
   },
   "dependencies": {
     "axios": "^1.7.2",
     "cheerio": "^1.0.0-rc.12",
     "dotenv": "^16.4.5",
+    "firebase": "^12.1.0",
+    "firebase-admin": "^13.4.0",
     "next": "14.2.5",
     "openai": "^4.52.7",
     "react": "^18.3.1",

@@ -64,7 +64,11 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Error en suscripción:', error.message);
+    console.error('Error en suscripción:', {
+      message: error.message,
+      stack: error.stack,
+      email: normalizedEmail
+    });
 
     if (error.message === 'Email already exists') {
       return res.status(409).json({ 
@@ -75,7 +79,8 @@ export default async function handler(req, res) {
 
     res.status(500).json({ 
       success: false, 
-      error: 'Error interno del servidor' 
+      error: 'Error interno del servidor',
+      debug: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
 
   } finally {

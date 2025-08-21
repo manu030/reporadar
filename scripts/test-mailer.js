@@ -28,39 +28,93 @@ async function testMailer() {
   // Test newsletter content building
   console.log('2. Testing construcción de newsletter...');
   
-  const testRepoData = [
+  // Test data simulando el formato de base de datos con locale
+  const testRepoDataES = [
     {
-      repo: {
-        name: 'microsoft/terminal',
-        url: 'https://github.com/microsoft/terminal',
-        description: 'The new Windows Terminal and the original Windows console host',
-        stars: 94821,
-        language: 'C++'
-      },
+      repo_name: 'microsoft/terminal',
+      repo_url: 'https://github.com/microsoft/terminal',
+      repo_description: 'The new Windows Terminal and the original Windows console host',
+      stars: 94821,
+      language: 'C++',
       ideas: [
-        'SaaS de terminal personalizable para equipos con colaboración en tiempo real',
-        'Marketplace premium de temas y extensiones para terminals corporativos',
-        'Servicio de backup automático y migración de configuraciones de terminal'
+        {
+          idea_oneliner: 'SaaS de terminal personalizable para equipos',
+          idea_problem: 'Los desarrolladores necesitan terminales colaborativas pero las actuales son individuales.',
+          idea_solution: 'Creamos una plataforma que permite compartir sesiones de terminal en tiempo real.',
+          idea_business_model: 'Suscripción mensual de $20/usuario con planes empresariales.',
+          idea_difficulty: 'Medio - Requiere infraestructura de tiempo real'
+        },
+        {
+          idea_oneliner: 'Marketplace de temas premium para terminals',
+          idea_problem: 'Los usuarios quieren personalizar sus terminals pero hay pocos temas de calidad.',
+          idea_solution: 'Marketplace donde diseñadores pueden vender temas premium y extensiones.',
+          idea_business_model: 'Comisión del 30% por venta más subscripción premium para creadores.',
+          idea_difficulty: 'Fácil - Plataforma web estándar con pagos'
+        }
       ]
     },
     {
-      repo: {
-        name: 'openai/whisper',
-        url: 'https://github.com/openai/whisper',
-        description: 'Robust Speech Recognition via Large-Scale Weak Supervision',
-        stars: 89445,
-        language: 'Python'
-      },
+      repo_name: 'openai/whisper',
+      repo_url: 'https://github.com/openai/whisper',
+      repo_description: 'Robust Speech Recognition via Large-Scale Weak Supervision',
+      stars: 89445,
+      language: 'Python',
       ideas: [
-        'API de transcripción especializada para podcasts con detección de speakers',
-        'Herramienta de subtitulado automático para creadores de contenido multiidioma',
-        'SaaS de análisis de sentimientos en llamadas de ventas transcritas automáticamente'
+        {
+          idea_oneliner: 'API de transcripción para podcasts con speakers',
+          idea_problem: 'Los podcasters necesitan transcripciones pero las actuales no identifican quién habla.',
+          idea_solution: 'API que transcribe y identifica automáticamente cada speaker del podcast.',
+          idea_business_model: 'Pricing por minuto transcrito: $0.02/minuto con planes de volumen.',
+          idea_difficulty: 'Difícil - Requiere AI avanzada para identificación de speakers'
+        }
+      ]
+    }
+  ];
+
+  const testRepoDataEN = [
+    {
+      repo_name: 'microsoft/terminal',
+      repo_url: 'https://github.com/microsoft/terminal',
+      repo_description: 'The new Windows Terminal and the original Windows console host',
+      stars: 94821,
+      language: 'C++',
+      ideas: [
+        {
+          idea_oneliner: 'Collaborative terminal SaaS for development teams',
+          idea_problem: 'Developers need collaborative terminals but current ones are individual only.',
+          idea_solution: 'We create a platform that allows sharing terminal sessions in real-time.',
+          idea_business_model: 'Monthly subscription of $20/user with enterprise plans.',
+          idea_difficulty: 'Medium - Requires real-time infrastructure'
+        },
+        {
+          idea_oneliner: 'Premium themes marketplace for terminals',
+          idea_problem: 'Users want to customize terminals but there are few quality themes available.',
+          idea_solution: 'Marketplace where designers can sell premium themes and extensions.',
+          idea_business_model: '30% commission per sale plus premium subscription for creators.',
+          idea_difficulty: 'Easy - Standard web platform with payments'
+        }
+      ]
+    },
+    {
+      repo_name: 'openai/whisper',
+      repo_url: 'https://github.com/openai/whisper',
+      repo_description: 'Robust Speech Recognition via Large-Scale Weak Supervision',
+      stars: 89445,
+      language: 'Python',
+      ideas: [
+        {
+          idea_oneliner: 'Podcast transcription API with speaker detection',
+          idea_problem: 'Podcasters need transcriptions but current ones don\'t identify who is speaking.',
+          idea_solution: 'API that transcribes and automatically identifies each podcast speaker.',
+          idea_business_model: 'Pricing per transcribed minute: $0.02/minute with volume plans.',
+          idea_difficulty: 'Hard - Requires advanced AI for speaker identification'
+        }
       ]
     }
   ];
   
-  const contentES = mailer.buildNewsletterContent(testRepoData, '21 de agosto, 2025', 'es');
-  const contentEN = mailer.buildNewsletterContent(testRepoData, 'August 21, 2025', 'en');
+  const contentES = mailer.buildNewsletterContent(testRepoDataES, '21 de agosto, 2025', 'es');
+  const contentEN = mailer.buildNewsletterContent(testRepoDataEN, 'August 21, 2025', 'en');
   
   console.log('📧 Contenido del newsletter (Español):\n');
   console.log('---INICIO ESPAÑOL---');
