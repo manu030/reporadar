@@ -122,21 +122,30 @@ export async function getServerSideProps() {
     
     // Serialize Firebase Timestamps and handle undefined values recursively
     const serialize = (obj) => {
-      if (obj === null || obj === undefined) return null;
-      if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean') return obj;
-      if (obj.toDate && typeof obj.toDate === 'function') return obj.toDate().toISOString();
-      if (Array.isArray(obj)) return obj.map(serialize);
-      if (typeof obj === 'object') {
-        const serialized = {};
-        for (const [key, value] of Object.entries(obj)) {
-          serialized[key] = serialize(value);
+      try {
+        if (obj === null || obj === undefined) return null;
+        if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean') return obj;
+        if (obj && obj.toDate && typeof obj.toDate === 'function') return obj.toDate().toISOString();
+        if (Array.isArray(obj)) return obj.map(serialize);
+        if (typeof obj === 'object') {
+          const serialized = {};
+          for (const [key, value] of Object.entries(obj)) {
+            try {
+              serialized[key] = serialize(value);
+            } catch (e) {
+              // Skip problematic values
+              serialized[key] = null;
+            }
+          }
+          return serialized;
         }
-        return serialized;
+        return obj;
+      } catch (e) {
+        return null;
       }
-      return obj;
     };
 
-    const serializedIdeas = serialize(latestIdeas || []);
+    const serializedIdeas = serialize(latestIdeas || []) || [];
 
     return {
       props: {
