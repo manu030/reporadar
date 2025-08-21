@@ -12,13 +12,16 @@ export default function Home({ latestIdeas, stats }) {
       description="Descubre ideas de negocio basadas en los repositorios más trending de GitHub. Análisis diario con inteligencia artificial."
     >
       {/* Hero Section */}
-      <section className="border-b-3 border-primary bg-secondary py-8 sm:py-12 md:py-16">
+      <section className="border-b-3 border-primary bg-secondary py-6 sm:py-10 md:py-14">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-8 sm:mb-10 md:mb-12">
             <img 
               src="/reporadar_logo.png" 
               alt="RepoRadar Logo" 
               className="w-24 h-24 mx-auto mb-4"
+              style={{
+                animation: 'float 3s ease-in-out infinite'
+              }}
             />
             <h1 className="text-3xl sm:text-4xl md:text-6xl leading-tight mb-4 sm:mb-6" style={{fontFamily: 'Rowdies, cursive', fontWeight: 400, color: '#222'}}>
               {t.title}

@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom floating animation for logo */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
 
 @layer base {
