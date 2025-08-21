@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 const translations = {
   es: {
     // Hero section
-    title: 'Reporadar',
+    title: 'Repo Radar',
     heroDescription: 'Descubre ideas de negocio basadas en los repositorios más trending de GitHub con',
     heroHighlight: 'análisis diario de inteligencia artificial.',
     
@@ -56,7 +56,7 @@ const translations = {
   
   en: {
     // Hero section
-    title: 'Reporadar',
+    title: 'Repo Radar',
     heroDescription: 'Discover business ideas based on GitHub\'s most trending repositories with',
     heroHighlight: 'daily artificial intelligence analysis.',
     
