@@ -10,7 +10,8 @@ export default function Layout({ children, title = 'Reporadar', description = 'D
         <title>{title}</title>
         <meta name="description" content={description} />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" href="/favicon.png" />
+        <link rel="shortcut icon" type="image/png" href="/favicon.png" />
         
         {/* Open Graph */}
         <meta property="og:title" content={title} />
