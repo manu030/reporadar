@@ -6,6 +6,10 @@ import useTranslations from '../hooks/useTranslations';
 export default function Home({ latestIdeas, stats }) {
   const t = useTranslations();
   
+  // Ensure data is safe for rendering
+  const safeIdeas = Array.isArray(latestIdeas) ? latestIdeas : [];
+  const safeStats = stats || {};
+  
   return (
     <Layout 
       title="Reporadar | Daily GitHub trending analysis"
@@ -46,8 +50,8 @@ export default function Home({ latestIdeas, stats }) {
               💡 {t.latestIdeas}
             </h2>
             <p className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-text px-2">
-              {latestIdeas.length > 0 
-                ? `${t.analysisDate} ${new Date(latestIdeas[0].processed_date).toLocaleDateString('es-ES', {
+              {safeIdeas.length > 0 && safeIdeas[0]?.processed_date
+                ? `${t.analysisDate} ${new Date(safeIdeas[0].processed_date).toLocaleDateString('es-ES', {
                     day: 'numeric', month: 'long', year: 'numeric'
                   })}`
                 : 'Soon you will have incredible ideas here'
@@ -55,13 +59,13 @@ export default function Home({ latestIdeas, stats }) {
             </p>
           </div>
 
-          {latestIdeas.length > 0 ? (
+          {safeIdeas.length > 0 ? (
             <div className="space-y-6 sm:space-y-8">
-              {latestIdeas.map((repo, index) => (
+              {safeIdeas.map((repo, index) => (
                 <IdeaCard 
-                  key={repo.repo_id} 
+                  key={repo.repo_id || `repo-${index}`} 
                   repo={repo} 
-                  ideas={repo.ideas} 
+                  ideas={repo.ideas || []} 
                 />
               ))}
             </div>
@@ -157,10 +161,28 @@ export async function getServerSideProps() {
   } catch (error) {
     console.error('Error loading data for homepage:', error.message);
     
+    // Return safe fallback data to prevent React errors
     return {
       props: {
-        latestIdeas: [],
-        stats: null
+        latestIdeas: [
+          {
+            repo_id: 'fallback-1',
+            repo_name: 'Sistema actualizándose',
+            repo_url: '#',
+            repo_description: 'Las ideas se están generando, vuelve en unos minutos.',
+            stars: 0,
+            language: 'Sistema',
+            processed_date: new Date().toISOString().split('T')[0],
+            created_at: new Date().toISOString(),
+            ideas: []
+          }
+        ],
+        stats: {
+          total_subscribers: 0,
+          total_repos_processed: 0,
+          latest_analysis_date: null,
+          latest_repos_count: 0
+        }
       }
     };
   }
