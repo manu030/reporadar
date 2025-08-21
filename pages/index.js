@@ -20,7 +20,7 @@ export default function Home({ latestIdeas, stats }) {
               alt="RepoRadar Logo" 
               className="w-24 h-24 mx-auto mb-4"
             />
-            <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-primary leading-tight mb-4 sm:mb-6" style={{fontFamily: 'Oi, cursive'}}>
+            <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-primary leading-tight mb-4 sm:mb-6" style={{fontFamily: 'Rowdies, cursive'}}>
               {t.title}
             </h1>
             <p className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-text max-w-3xl mx-auto mb-6 sm:mb-8 px-2">
