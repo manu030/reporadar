@@ -1,4 +1,5 @@
 const Database = require('../../lib/database');
+const jwt = require('jsonwebtoken');
 const Mailer = require('../../lib/mailer');
 
 export default async function handler(req, res) {
@@ -20,12 +21,14 @@ export default async function handler(req, res) {
     
     if (token) {
       try {
-        // Decodificar token simple (base64)
-        email = Buffer.from(token, 'base64').toString('utf-8');
+        // Verificar token JWT seguro
+        const secret = process.env.JWT_SECRET || 'fallback-secret-change-in-production';
+        const decoded = jwt.verify(token, secret);
+        email = decoded.email;
       } catch (error) {
         return res.status(400).json({ 
           success: false, 
-          error: 'Token inválido' 
+          error: 'Token inválido o expirado' 
         });
       }
     } else {
