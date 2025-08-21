@@ -12,7 +12,7 @@ export default function Home({ latestIdeas, stats }) {
       description="Descubre ideas de negocio basadas en los repositorios más trending de GitHub. Análisis diario con inteligencia artificial."
     >
       {/* Hero Section */}
-      <section className="border-b-3 border-primary bg-secondary py-6 sm:py-10 md:py-14">
+      <section className="border-b-3 border-primary bg-secondary pt-0 pb-28">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-8 sm:mb-10 md:mb-12">
             <img 
@@ -120,9 +120,27 @@ export async function getServerSideProps() {
     
     await db.close();
     
+    // Serialize Firebase Timestamps and handle undefined values recursively
+    const serialize = (obj) => {
+      if (obj === null || obj === undefined) return null;
+      if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean') return obj;
+      if (obj.toDate && typeof obj.toDate === 'function') return obj.toDate().toISOString();
+      if (Array.isArray(obj)) return obj.map(serialize);
+      if (typeof obj === 'object') {
+        const serialized = {};
+        for (const [key, value] of Object.entries(obj)) {
+          serialized[key] = serialize(value);
+        }
+        return serialized;
+      }
+      return obj;
+    };
+
+    const serializedIdeas = serialize(latestIdeas || []);
+
     return {
       props: {
-        latestIdeas: latestIdeas || [],
+        latestIdeas: serializedIdeas,
         stats: stats || null
       }
     };

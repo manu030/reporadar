@@ -1,8 +1,3 @@
-const Database = require('../lib/database');
-const GitHubScraper = require('../lib/scraper');
-const AIAnalyzer = require('../lib/analyzer');
-const Mailer = require('../lib/mailer');
-
 // Configurar dotenv con múltiples fallbacks
 try {
   require('dotenv').config({ path: '.env.local' });
@@ -14,6 +9,11 @@ try {
     console.log('No .env files found, using environment variables');
   }
 }
+
+const Database = require('../lib/database');
+const GitHubScraper = require('../lib/scraper');
+const AIAnalyzer = require('../lib/analyzer');
+const Mailer = require('../lib/mailer');
 
 class DailyAnalysis {
   constructor() {
@@ -115,7 +115,7 @@ class DailyAnalysis {
 
   async scrapeGitHub() {
     console.log('🕷️  Scrapeando GitHub trending...');
-    const repos = await this.scraper.getTrendingRepos(5);
+    const repos = await this.scraper.getTrendingRepos(3);
     console.log(`✅ Encontrados ${repos.length} repositorios trending\n`);
     return repos;
   }

@@ -55,3 +55,6 @@ Thumbs.db
 # Build outputs
 build/
 dist/
+
+# Communication/Social Media content (not for public repo)
+communication/

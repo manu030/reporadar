@@ -10,19 +10,58 @@ export default function Layout({ children, title = 'Reporadar', description = 'D
         <title>{title}</title>
         <meta name="description" content={description} />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="robots" content="index, follow" />
+        <meta name="author" content="Manuel Sierra" />
+        <meta name="keywords" content="GitHub trending, business ideas, AI analysis, repository analytics, startup ideas, programming trends, developer tools, newsletter" />
         <link rel="icon" type="image/png" href="/favicon.png" />
         <link rel="shortcut icon" type="image/png" href="/favicon.png" />
+        <link rel="canonical" href={process.env.NEXT_PUBLIC_BASE_URL} />
         
         {/* Open Graph */}
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={process.env.NEXT_PUBLIC_BASE_URL} />
+        <meta property="og:image" content={`${process.env.NEXT_PUBLIC_BASE_URL}/reporadar_logo.png`} />
+        <meta property="og:image:width" content="400" />
+        <meta property="og:image:height" content="400" />
+        <meta property="og:site_name" content="RepoRadar" />
+        <meta property="og:locale" content="es_ES" />
         
         {/* Twitter */}
-        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={`${process.env.NEXT_PUBLIC_BASE_URL}/reporadar_logo.png`} />
+        <meta name="twitter:creator" content="@manuelsierra" />
+        <meta name="twitter:site" content="@reporadar" />
+        
+        {/* JSON-LD Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "RepoRadar",
+              "description": description,
+              "url": process.env.NEXT_PUBLIC_BASE_URL,
+              "author": {
+                "@type": "Person",
+                "name": "Manuel Sierra",
+                "url": "https://www.linkedin.com/in/manuelsierraarroyo/"
+              },
+              "publisher": {
+                "@type": "Organization",
+                "name": "RepoRadar",
+                "logo": {
+                  "@type": "ImageObject",
+                  "url": `${process.env.NEXT_PUBLIC_BASE_URL}/reporadar_logo.png`
+                }
+              }
+            })
+          }}
+        />
       </Head>
       
       <div className="min-h-screen bg-secondary">

@@ -1,5 +1,5 @@
-const DailyAnalysis = require('./daily-analysis');
 require('dotenv').config({ path: '.env.local' });
+const DailyAnalysis = require('./daily-analysis');
 
 async function runSpainNewsletter() {
   console.log('🇪🇸 Iniciando newsletter para España (8:00 AM CET)...\n');
