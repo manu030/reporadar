@@ -15,6 +15,11 @@ export default function Home({ latestIdeas, stats }) {
       <section className="border-b-3 border-primary bg-secondary py-8 sm:py-12 md:py-16">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-8 sm:mb-10 md:mb-12">
+            <img 
+              src="/reporadar_logo.png" 
+              alt="RepoRadar Logo" 
+              className="w-16 h-16 mx-auto mb-4"
+            />
             <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-primary leading-tight mb-4 sm:mb-6">
               {t.title}
             </h1>
