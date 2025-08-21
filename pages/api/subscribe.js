@@ -33,10 +33,14 @@ export default async function handler(req, res) {
   const mailer = new Mailer();
 
   try {
+    console.log('🔍 Iniciando proceso de suscripción para:', normalizedEmail);
     await db.connect();
+    console.log('✅ Conexión a base de datos exitosa');
 
     // Verificar si ya existe
+    console.log('🔍 Verificando si usuario existe...');
     const existingUser = await db.getUser(normalizedEmail);
+    console.log('✅ Verificación completada:', existingUser ? 'Usuario existe' : 'Usuario nuevo');
     
     if (existingUser) {
       return res.status(409).json({ 
