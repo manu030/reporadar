@@ -6,6 +6,11 @@ on:
     - cron: '0 4 * * 1,3,5'
   workflow_dispatch: # Allow manual trigger
 
+permissions:
+  contents: read
+  actions: read
+  secrets: read
+
 jobs:
   analyze-and-send:
     runs-on: ubuntu-latest
