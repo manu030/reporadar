@@ -33,24 +33,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
         
-      - name: Debug environment variables
-        run: |
-          echo "Checking if secrets are loaded..."
-          echo "FIREBASE_PROJECT_ID length: ${#FIREBASE_PROJECT_ID}"
-          echo "FIREBASE_CLIENT_EMAIL length: ${#FIREBASE_CLIENT_EMAIL}"
-          echo "OPENAI_API_KEY length: ${#OPENAI_API_KEY}"
-        env:
-          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-          FIREBASE_PRIVATE_KEY_ID: ${{ secrets.FIREBASE_PRIVATE_KEY_ID }}
-          FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
-          FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
-          FIREBASE_CLIENT_ID: ${{ secrets.FIREBASE_CLIENT_ID }}
-          FIREBASE_CLIENT_X509_CERT_URL: ${{ secrets.FIREBASE_CLIENT_X509_CERT_URL }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
-          NEXT_PUBLIC_BASE_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}
-          
       - name: Initialize database
         run: npm run init-db
         env:
