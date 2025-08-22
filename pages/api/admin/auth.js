@@ -95,16 +95,25 @@ export default function handler(req, res) {
       }`
     ]);
     
-    // Almacenar el token en memoria (para producción usar Redis)
-    global.adminSessions = global.adminSessions || new Set();
-    global.adminSessions.add(sessionToken);
+    // Crear JWT token seguro para admin session (persiste en server restarts)
+    const jwt = require('jsonwebtoken');
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Configuración del servidor incompleta' 
+      });
+    }
     
-    // Auto-limpiar token después de 1 hora
-    setTimeout(() => {
-      if (global.adminSessions) {
-        global.adminSessions.delete(sessionToken);
-      }
-    }, 3600000);
+    const adminToken = jwt.sign(
+      { 
+        role: 'admin',
+        sessionId: sessionToken,
+        timestamp: Date.now()
+      },
+      jwtSecret,
+      { expiresIn: '1h' }
+    );
     
     res.status(200).json({ success: true });
   } else {

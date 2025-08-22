@@ -22,7 +22,13 @@ export default async function handler(req, res) {
     if (token) {
       try {
         // Verificar token JWT seguro
-        const secret = process.env.JWT_SECRET || 'fallback-secret-change-in-production';
+        const secret = process.env.JWT_SECRET;
+        if (!secret) {
+          return res.status(500).json({ 
+            success: false, 
+            error: 'Configuración del servidor incompleta' 
+          });
+        }
         const decoded = jwt.verify(token, secret);
         email = decoded.email;
       } catch (error) {
@@ -78,8 +84,9 @@ export default async function handler(req, res) {
       });
     }
 
-    // Eliminar usuario
-    await db.run('DELETE FROM users WHERE email = ?', [normalizedEmail]);
+    // Eliminar usuario usando Firestore
+    const docId = db.generateSafeDocId(normalizedEmail);
+    await db.db.collection('users').doc(docId).delete();
     
     // Enviar email de confirmación
     try {
