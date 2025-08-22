@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import SubscribeForm from '../components/SubscribeForm';
 import IdeaCard from '../components/IdeaCard';
@@ -5,6 +6,26 @@ import useTranslations from '../hooks/useTranslations';
 
 export default function Home({ latestIdeas, stats }) {
   const t = useTranslations();
+  const [formattedDate, setFormattedDate] = useState('');
+  
+  // Client-side date formatting to avoid hydration mismatch
+  useEffect(() => {
+    if (latestIdeas.length > 0 && latestIdeas[0].processed_date) {
+      try {
+        const date = new Date(latestIdeas[0].processed_date);
+        const formatted = date.toLocaleDateString('es-ES', {
+          day: 'numeric', 
+          month: 'long', 
+          year: 'numeric'
+        });
+        setFormattedDate(`${t.analysisDate} ${formatted}`);
+      } catch (error) {
+        setFormattedDate('Próximamente');
+      }
+    } else {
+      setFormattedDate('Próximamente');
+    }
+  }, [latestIdeas, t.analysisDate]);
   
   return (
     <Layout>
@@ -43,12 +64,7 @@ export default function Home({ latestIdeas, stats }) {
               💡 {t.latestIdeas}
             </h2>
             <p className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-text px-2">
-              {latestIdeas.length > 0 
-                ? `${t.analysisDate} ${new Date(latestIdeas[0].processed_date).toLocaleDateString('es-ES', {
-                    day: 'numeric', month: 'long', year: 'numeric'
-                  })}`
-                : 'Soon you will have incredible ideas here'
-              }
+              {formattedDate || 'Próximamente'}
             </p>
           </div>
 
@@ -56,9 +72,9 @@ export default function Home({ latestIdeas, stats }) {
             <div className="space-y-6 sm:space-y-8">
               {latestIdeas.map((repo, index) => (
                 <IdeaCard 
-                  key={repo.repo_id} 
+                  key={repo.repo_id || `repo-${index}`} 
                   repo={repo} 
-                  ideas={repo.ideas} 
+                  ideas={Array.isArray(repo.ideas) ? repo.ideas : []} 
                 />
               ))}
             </div>
@@ -143,10 +159,18 @@ export async function getServerSideProps() {
     };
 
     const serializedIdeas = serialize(latestIdeas || []) || [];
+    
+    // Normalize data structure for hydration consistency
+    const normalizedIdeas = serializedIdeas.map(repo => ({
+      ...repo,
+      ideas: Array.isArray(repo.ideas) ? repo.ideas : [],
+      processed_date: repo.processed_date ? new Date(repo.processed_date).toISOString() : null,
+      created_at: repo.created_at ? new Date(repo.created_at).toISOString() : null
+    }));
 
     return {
       props: {
-        latestIdeas: serializedIdeas,
+        latestIdeas: normalizedIdeas,
         stats: stats || null
       }
     };
