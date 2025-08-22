@@ -14,20 +14,24 @@ npm run lint             # Run ESLint
 
 ### Database & Testing
 ```bash
-npm run init-db          # Initialize SQLite database with schema
+npm run init-db          # Initialize Firebase Firestore (validation only)
 npm run daily-analysis   # Run complete daily analysis cycle
+npm run spain-newsletter # Run Spain newsletter (ES locale)
+npm run usa-newsletter   # Run USA newsletter (EN locale)
 npm run test-scraper     # Test GitHub trending scraper only
-npm run test-analyzer    # Test OpenAI idea generation only  
+npm run test-analyzer    # Test OpenRouter idea generation only  
 npm run test-mailer      # Test email sending only
 ```
 
-### Database Queries
+### Firebase Console
 ```bash
-sqlite3 data/database.sqlite
-# Common queries:
-# SELECT COUNT(*) FROM users;
-# SELECT * FROM processed_repos WHERE processed_date = date('now');
-# SELECT * FROM ideas WHERE generated_date = date('now');
+# Access Firebase Console for data inspection:
+# https://console.firebase.google.com/project/[PROJECT_ID]/firestore
+# 
+# Common operations via database.js methods:
+# await db.getUserCount()
+# await db.getLatestIdeas('es') 
+# await db.getProcessedReposForDate('2025-08-22')
 ```
 
 ## Architecture
@@ -35,43 +39,47 @@ sqlite3 data/database.sqlite
 Repo Radar is a Next.js application that automatically scrapes GitHub trending repositories and generates business ideas using AI, then sends them via newsletter.
 
 ### Core Data Flow
-1. **Daily GitHub Actions trigger** (6:00 AM UTC) calls `/api/cron/daily`
-2. **Scraper** (`lib/scraper.js`) fetches top 5 trending repos from GitHub
-3. **Analyzer** (`lib/analyzer.js`) sends repo data to OpenAI to generate 3 business ideas per repo
-4. **Database** (`lib/database.js`) stores repos and ideas in SQLite
-5. **Mailer** (`lib/mailer.js`) sends newsletters to all subscribers
+1. **Daily GitHub Actions trigger** (spain-newsletter.yml at 15:00 UTC, usa-newsletter.yml at 16:00 UTC)
+2. **Scraper** (`lib/scraper.js`) fetches top 3 trending repos from GitHub
+3. **Analyzer** (`lib/analyzer.js`) sends repo data to OpenRouter API (Llama 3.1 70B/Mixtral 8x7B) to generate 3 business ideas per repo
+4. **Database** (`lib/database.js`) stores repos and ideas in Firebase Firestore with LEAN deduplication
+5. **Mailer** (`lib/mailer.js`) sends locale-specific newsletters to subscribers
 6. **Frontend** displays latest ideas on landing page
 
-### Database Schema (SQLite)
-```sql
--- Updated schema with internationalization support
-CREATE TABLE users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT UNIQUE NOT NULL,
-    locale TEXT DEFAULT 'es',           -- 'es' or 'en' for i18n
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
+### Database Schema (Firebase Firestore)
+```javascript
+// Collections structure:
+users: {
+  [hashed_email]: {
+    email: string,
+    locale: 'es' | 'en',
+    created_at: Timestamp
+  }
+}
 
-CREATE TABLE ideas (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    repo_id INTEGER NOT NULL,
-    idea_number INTEGER NOT NULL,
-    idea_oneliner TEXT NOT NULL,        -- Brief description
-    idea_problem TEXT NOT NULL,         -- Problem statement  
-    idea_solution TEXT NOT NULL,        -- Solution description
-    idea_business_model TEXT NOT NULL,  -- Business model
-    idea_difficulty TEXT NOT NULL,      -- 'Fácil', 'Medio', 'Difícil'
-    generated_date DATE NOT NULL,
-    FOREIGN KEY (repo_id) REFERENCES processed_repos (id)
-);
+processed_repos: {
+  [doc_id]: {
+    repo_name: string,
+    repo_url: string, 
+    repo_description: string,
+    stars: number,
+    language: string,
+    processed_date: string, // YYYY-MM-DD
+    created_at: Timestamp,
+    ideas: {
+      es: [{ oneliner, problem, solution, business_model, difficulty }],
+      en: [{ oneliner, problem, solution, business_model, difficulty }]
+    }
+  }
+}
 ```
 
 ### Key Components
 
 **Database Class** (`lib/database.js`):
-- Handles SQLite connection lifecycle
-- Methods: `addUser(email, locale)`, `addProcessedRepo()`, `addIdeas()`, `getLatestIdeas()`
-- Auto-creates data directory if not exists
+- Handles Firebase Firestore connection
+- Methods: `addUser(email, locale)`, `saveRepoWithIdeas()`, `getLatestIdeas()` with LEAN deduplication
+- Uses SHA256 hashing for secure email-based document IDs
 
 **Scraper** (`lib/scraper.js`):  
 - Scrapes https://github.com/trending?since=daily
@@ -80,10 +88,10 @@ CREATE TABLE ideas (
 - Has fallback mock data for development
 
 **Analyzer** (`lib/analyzer.js`):
-- OpenAI integration with structured JSON responses
+- OpenRouter API integration with structured JSON responses
 - Generates 5 fields per idea: oneliner, problem, solution, business_model, difficulty
-- Model fallback: gpt-4o-mini → gpt-3.5-turbo-1106
-- Has fallback template ideas when API fails
+- Model fallback: Llama 3.1 70B → Mixtral 8x7B → template ideas
+- Bilingual idea generation (Spanish and English)
 
 **Mailer** (`lib/mailer.js`):
 - Uses Resend API for email delivery
@@ -149,17 +157,32 @@ success: '#2D9B8B',      // Teal green
 
 ### Development vs Production
 - Development has fallback mock data when GitHub is unreachable
-- Production uses environment variables for all API keys
-- SQLite database auto-created in `data/` directory
+- Production uses environment variables for all API keys and Firebase credentials
+- Firebase Firestore provides cloud database with automatic scaling
+- LEAN deduplication prevents newsletter duplicate repositories
 
 ## Environment Variables
 
 Required for full functionality:
 ```env
-OPENAI_API_KEY=sk-...
-RESEND_API_KEY=re_...  
-RESEND_FROM_EMAIL=noreply@reporadar.com
-NEXT_PUBLIC_BASE_URL=https://reporadar.vercel.app
+# AI Analysis
+OPENROUTER_API_KEY=sk-or-...
+OPENAI_API_KEY=sk-...           # Fallback for analyzer
+
+# Email Service  
+RESEND_API_KEY=re_...
+RESEND_FROM_EMAIL=noreply@reporadar.xyz
+
+# Firebase Firestore
+FIREBASE_PROJECT_ID=reporadar-...
+FIREBASE_PRIVATE_KEY_ID=...
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----..."
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-...@reporadar.iam.gserviceaccount.com
+FIREBASE_CLIENT_ID=...
+FIREBASE_CLIENT_X509_CERT_URL=https://www.googleapis.com/robot/v1/metadata/x509/...
+
+# Application
+NEXT_PUBLIC_BASE_URL=https://reporadar.xyz
 ```
 
 ## File Structure Notes
@@ -168,12 +191,13 @@ NEXT_PUBLIC_BASE_URL=https://reporadar.vercel.app
 - `lib/` - Core business logic (database, scraper, analyzer, mailer)
 - `components/` - React components with i18n support
 - `pages/api/` - API endpoints including separate `/en/` routes
-- `scripts/` - Standalone executables for testing individual components
+- `scripts/` - Standalone executables for newsletter automation and testing
 - `hooks/` - Custom React hooks including translation system
-- `data/` - SQLite database file location
+- `.github/workflows/` - GitHub Actions for automated newsletter delivery
 
 ### Configuration Files
-- `next.config.js` - Includes i18n setup and SQLite webpack config
+- `next.config.js` - Includes i18n setup and webpack configuration
 - `tailwind.config.js` - Neobrutalist color palette and custom classes
+- `.github/workflows/` - Automated newsletter scheduling (spain-newsletter.yml, usa-newsletter.yml)
 
 The codebase prioritizes simplicity and reliability over complex features, with extensive fallback mechanisms for production resilience.
