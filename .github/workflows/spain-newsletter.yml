@@ -33,6 +33,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
         
+      - name: Debug secrets availability
+        run: |
+          echo "Checking if secrets are properly configured..."
+          echo "FIREBASE_PROJECT_ID exists: ${{ secrets.FIREBASE_PROJECT_ID != '' }}"
+          echo "FIREBASE_CLIENT_EMAIL exists: ${{ secrets.FIREBASE_CLIENT_EMAIL != '' }}"
+          echo "OPENAI_API_KEY exists: ${{ secrets.OPENAI_API_KEY != '' }}"
+          echo "RESEND_API_KEY exists: ${{ secrets.RESEND_API_KEY != '' }}"
+          
+          # List all available secrets (will show names only, not values)
+          echo "Available context:"
+          echo "Repository: ${{ github.repository }}"
+          echo "Workflow: ${{ github.workflow }}"
+          echo "Run ID: ${{ github.run_id }}"
+        
       - name: Initialize database
         run: npm run init-db
         env:
