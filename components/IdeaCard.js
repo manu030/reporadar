@@ -1,11 +1,20 @@
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 import useTranslations from '../hooks/useTranslations';
 
 // Función para traducir y mejorar descripciones de repos
-const translateAndEnhanceDescription = (repoName, originalDescription, language, stars) => {
-  const repoKey = repoName.toLowerCase();
+const translateAndEnhanceDescription = (repoName, originalDescription, language, stars, locale) => {
+  // If English, return original description with minimal enhancement
+  if (locale === 'en') {
+    const starsContext = stars > 50000 ? '⭐ Very popular in the community' : 
+                        stars > 10000 ? '🌟 Popular among developers' : 
+                        '🚀 Emerging project';
+    
+    return `${originalDescription}. ${starsContext}`.replace(/\.\./, '.');
+  }
   
-  // Traducciones y contexto específicos por repositorio popular
+  // Spanish translations for popular repos
+  const repoKey = repoName.toLowerCase();
   const translations = {
     'microsoft/terminal': 'Nueva terminal moderna de Windows con pestañas, temas personalizables y características avanzadas para desarrolladores. Reemplaza al Command Prompt tradicional.',
     'openai/whisper': 'Sistema de reconocimiento de voz de OpenAI entrenado con 680.000 horas de audio. Transforma audio a texto con alta precisión en múltiples idiomas.',
@@ -68,6 +77,7 @@ const translateAndEnhanceDescription = (repoName, originalDescription, language,
 export default function IdeaCard({ repo, ideas }) {
   const [expandedIdea, setExpandedIdea] = useState(null);
   const t = useTranslations();
+  const { locale } = useRouter();
 
   const toggleIdea = (index) => {
     setExpandedIdea(expandedIdea === index ? null : index);
@@ -92,7 +102,7 @@ export default function IdeaCard({ repo, ideas }) {
             </div>
             
             <p className="text-gray-text mb-3 sm:mb-4 leading-relaxed text-sm sm:text-base">
-              {translateAndEnhanceDescription(repo.repo_name, repo.repo_description, repo.language, repo.stars)}
+              {translateAndEnhanceDescription(repo.repo_name, repo.repo_description, repo.language, repo.stars, locale)}
             </p>
           </div>
           

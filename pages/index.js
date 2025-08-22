@@ -184,17 +184,20 @@ export default function Home({ latestIdeas, stats, allDates }) {
   );
 }
 
-export async function getServerSideProps() {
+export async function getServerSideProps(context) {
   // Importar Database aquí para evitar problemas con webpack
   const Database = require('../lib/database');
   const DailyAnalysis = require('../scripts/daily-analysis');
+  
+  // Get locale from context (will be 'es' or 'en')
+  const locale = context.locale || 'es';
   
   try {
     const db = new Database();
     await db.connect();
     
-    // Obtener últimas ideas
-    const latestIdeas = await db.getLatestIdeas();
+    // Obtener últimas ideas for the specific locale
+    const latestIdeas = await db.getLatestIdeas(locale);
     
     // Obtener estadísticas
     const analysis = new DailyAnalysis();
