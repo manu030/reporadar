@@ -1,4 +1,4 @@
-# Configuración de Resend para RepoRadar
+# Configuración de Resend para Repo Radar
 
 Este documento explica cómo configurar Resend para el envío de newsletters.
 
@@ -13,7 +13,7 @@ Este documento explica cómo configurar Resend para el envío de newsletters.
 1. Ve al dashboard de Resend
 2. Click en "API Keys" en el menú lateral
 3. Click en "Create API Key"
-4. Dale un nombre (ej: "RepoRadar Production")
+4. Dale un nombre (ej: "Repo Radar Production")
 5. Copia la API key (empieza con `re_`)
 
 ## 3. Configurar dominio (Opcional pero recomendado)

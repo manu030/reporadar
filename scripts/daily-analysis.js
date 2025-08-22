@@ -94,17 +94,40 @@ class DailyAnalysis {
 
   async getExistingAnalysis() {
     const repos = await this.db.getLatestIdeas();
-    return repos.map(repo => ({
-      repo: {
-        name: repo.repo_name,
-        url: repo.repo_url,
-        description: repo.repo_description,
-        stars: repo.stars,
-        language: repo.language
-      },
-      ideas: repo.ideas,
-      success: true
-    }));
+    return repos.map(repo => {
+      // Get the stored ideas structure which should be {es: [...], en: [...]}
+      let storedIdeas = repo.ideas;
+      
+      // Convert to expected format if needed
+      let ideas = {
+        es: [],
+        en: []
+      };
+      
+      if (storedIdeas && typeof storedIdeas === 'object') {
+        if (Array.isArray(storedIdeas)) {
+          // Old format: ideas is directly an array (assume Spanish)
+          ideas.es = storedIdeas;
+          ideas.en = storedIdeas; // Fallback, should be translated later
+        } else if (storedIdeas.es || storedIdeas.en) {
+          // New format: ideas is {es: [...], en: [...]}
+          ideas.es = Array.isArray(storedIdeas.es) ? storedIdeas.es : [];
+          ideas.en = Array.isArray(storedIdeas.en) ? storedIdeas.en : [];
+        }
+      }
+      
+      return {
+        repo: {
+          name: repo.repo_name,
+          url: repo.repo_url,
+          description: repo.repo_description,
+          stars: repo.stars,
+          language: repo.language
+        },
+        ideas: ideas,
+        success: true
+      };
+    });
   }
 
   async initializeDatabase() {
@@ -152,7 +175,14 @@ class DailyAnalysis {
     for (const result of analysisResults) {
       try {
         // LEAN: Save repo with ideas in single operation
-        await this.db.saveRepoWithIdeas(result.repo, result.ideas, this.today);
+        // result.ideas contains {es: [...], en: [...]}
+        // For now, we'll save all ideas together (we can separate later if needed)
+        const allIdeas = {
+          es: result.ideas?.es || [],
+          en: result.ideas?.en || []
+        };
+        
+        await this.db.saveRepoWithIdeas(result.repo, allIdeas, this.today);
         savedCount++;
       } catch (error) {
         console.error(`❌ Error guardando ${result.repo.name}:`, error.message);

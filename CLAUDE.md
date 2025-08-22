@@ -32,7 +32,7 @@ sqlite3 data/database.sqlite
 
 ## Architecture
 
-RepoRadar is a Next.js application that automatically scrapes GitHub trending repositories and generates business ideas using AI, then sends them via newsletter.
+Repo Radar is a Next.js application that automatically scrapes GitHub trending repositories and generates business ideas using AI, then sends them via newsletter.
 
 ### Core Data Flow
 1. **Daily GitHub Actions trigger** (6:00 AM UTC) calls `/api/cron/daily`

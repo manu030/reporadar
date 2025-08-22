@@ -127,7 +127,15 @@ export default function IdeaCard({ repo, ideas }) {
                     idea_business_model: 'Modelo por definir',
                     idea_difficulty: 'Medio - Legacy data'
                   }
-                : idea;
+                : {
+                    // Support both old format (idea_*) and new format (*)
+                    idea_oneliner: idea.idea_oneliner || idea.oneliner,
+                    idea_description: idea.idea_description || idea.description,
+                    idea_problem: idea.idea_problem || idea.problem,
+                    idea_solution: idea.idea_solution || idea.solution,
+                    idea_business_model: idea.idea_business_model || idea.business_model,
+                    idea_difficulty: idea.idea_difficulty || idea.difficulty
+                  };
               
               return (
                 <div 
@@ -147,6 +155,11 @@ export default function IdeaCard({ repo, ideas }) {
                           <p className="text-primary font-extrabold text-base sm:text-lg leading-tight sm:leading-normal pr-2">
                             {ideaData.idea_oneliner}
                           </p>
+                          {(ideaData.idea_description || ideaData.description) && (
+                            <p className="text-gray-text text-sm sm:text-base leading-relaxed pr-2 mt-1">
+                              {ideaData.idea_description || ideaData.description}
+                            </p>
+                          )}
                           <div className="mt-1 sm:mt-2">
                             <div className="flex items-center gap-2">
                               <span className={`font-semibold px-2 sm:px-3 py-1 text-xs sm:text-sm flex items-center gap-1 border-2 border-primary shadow-brutal-sm rounded-sm ${

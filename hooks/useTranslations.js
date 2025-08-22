@@ -20,6 +20,8 @@ const translations = {
     subscribedButton: '✅ ¡Suscrito!',
     retryButton: '🔄 Intentar de nuevo',
     freeForever: 'Gratis para siempre',
+    helpImprove: '💡 Ayúdanos a mejorar',
+    shareIdeas: 'Comparte tus ideas',
     
     // Ideas section
     latestIdeas: 'Últimas Ideas de Negocio Generadas',
@@ -77,6 +79,8 @@ const translations = {
     subscribedButton: '✅ Subscribed!',
     retryButton: '🔄 Try again',
     freeForever: 'Free forever',
+    helpImprove: '💡 Help us improve',
+    shareIdeas: 'Share your ideas',
     
     // Ideas section
     latestIdeas: 'Latest Business Ideas Generated',

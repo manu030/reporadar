@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import useTranslations from '../hooks/useTranslations';
+import FeedbackModal from './FeedbackModal';
 
 export default function SubscribeForm() {
   const { locale } = useRouter();
@@ -8,6 +9,7 @@ export default function SubscribeForm() {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('idle'); // idle, loading, success, error
   const [message, setMessage] = useState('');
+  const [showFeedback, setShowFeedback] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -95,9 +97,20 @@ export default function SubscribeForm() {
         )}
       </form>
 
-      <div className="mt-4 sm:mt-6 text-xs sm:text-sm text-gray-text text-center">
-        <p>{t.freeForever}</p>
+      <div className="mt-4 sm:mt-6 text-xs sm:text-sm text-center space-y-2">
+        <p className="text-gray-text">{t.freeForever}</p>
+        <button
+          onClick={() => setShowFeedback(true)}
+          className="text-accent hover:text-primary font-semibold underline transition-colors"
+        >
+          {t.helpImprove}
+        </button>
       </div>
+
+      <FeedbackModal 
+        isOpen={showFeedback} 
+        onClose={() => setShowFeedback(false)} 
+      />
     </div>
   );
 }

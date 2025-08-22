@@ -1,8 +1,8 @@
-# 👻 RepoRadar
+# 👻 Repo Radar
 
 **AI-Powered GitHub Trending Analysis & Business Idea Generator**
 
-RepoRadar automatically analyzes GitHub's trending repositories and generates detailed business ideas using AI. Features multilingual support (Spanish/English), automated newsletters, and runs on a Monday/Wednesday/Saturday schedule.
+Repo Radar automatically analyzes GitHub's trending repositories and generates detailed business ideas using AI. Features multilingual support (Spanish/English), automated newsletters, and runs on a Monday/Wednesday/Saturday schedule.
 
 ## 🎯 Key Features
 
@@ -65,7 +65,7 @@ CREATE TABLE ideas (
 ## 📂 Estructura del Proyecto
 
 ```
-RepoRadar/
+Repo Radar/
 ├── README.md
 ├── package.json
 ├── next.config.js

@@ -58,7 +58,7 @@ async function testDirectAnalysis() {
 }
 
 async function main() {
-  console.log('🚀 RepoRadar Cron Testing Suite\n');
+  console.log('🚀 Repo Radar Cron Testing Suite\n');
   
   // Test 1: Direct script execution
   await testDirectAnalysis();

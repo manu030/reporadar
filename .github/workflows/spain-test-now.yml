@@ -66,9 +66,3 @@ jobs:
           FIREBASE_CLIENT_X509_CERT_URL: ${{ secrets.FIREBASE_CLIENT_X509_CERT_URL }}
           FORCE_ANALYSIS: true
           
-      - name: Upload database artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: spain-test-database-${{ github.run_number }}
-          path: data/database.sqlite
-          retention-days: 7

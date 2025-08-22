@@ -13,6 +13,7 @@
     "test-analyzer": "node scripts/test-analyzer.js",
     "test-mailer": "node scripts/test-mailer.js",
     "test-cron": "node scripts/test-cron.js",
+    "clean-db": "node scripts/clean-database.js",
     "spain-newsletter": "node scripts/spain-newsletter.js",
     "usa-newsletter": "node scripts/usa-newsletter.js"
   },
@@ -45,6 +46,6 @@
     "business-ideas",
     "newsletter"
   ],
-  "author": "RepoRadar Team",
+  "author": "Repo Radar Team",
   "license": "MIT"
 }

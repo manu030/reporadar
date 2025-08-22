@@ -1,14 +1,14 @@
-# 🚀 Cómo construí RepoRadar con Claude Code: De idea a producción en 5 horas
+# 🚀 Cómo construí Repo Radar con Claude Code: De idea a producción en 5 horas
 
 ## 📱 Post de LinkedIn (Build in Public)
 
 ### Post 1: La Idea
 ```
-Día 1 de #BuildInPublic: RepoRadar 🚀
+Día 1 de #BuildInPublic: Repo Radar 🚀
 
 ¿Y si pudieras recibir ideas de negocio basadas en los repos más trending de GitHub cada día?
 
-Eso es RepoRadar:
+Eso es Repo Radar:
 • Scraping automático de GitHub Trending
 • IA genera 3 ideas de negocio por repo
 • Newsletter diario con 15 ideas frescas
@@ -23,7 +23,7 @@ Thread 🧵👇
 
 ### Post 2: El Stack
 ```
-El stack técnico de RepoRadar:
+El stack técnico de Repo Radar:
 
 Frontend:
 • Next.js 14 con App Router
@@ -60,7 +60,7 @@ Es como hacer pair programming con un senior que nunca se cansa.
 
 ### Post 4: Los Números
 ```
-RepoRadar en números (primera semana):
+Repo Radar en números (primera semana):
 
 📊 Métricas:
 • 147 suscriptores
@@ -79,7 +79,7 @@ ROI del tiempo: infinito.
 
 ### Post 5: Lecciones Aprendidas
 ```
-5 lecciones construyendo RepoRadar:
+5 lecciones construyendo Repo Radar:
 
 1. SQLite > PostgreSQL para MVPs
    (Simplicidad gana)
@@ -102,7 +102,7 @@ github.com/...
 
 ---
 
-## 📚 Guía Técnica Completa: Construyendo RepoRadar con Claude Code
+## 📚 Guía Técnica Completa: Construyendo Repo Radar con Claude Code
 
 ### Tabla de Contenidos
 1. [Preparación del Entorno](#preparación-del-entorno)
@@ -147,7 +147,7 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 
 #### Prompt Inicial a Claude
 ```
-Quiero crear RepoRadar, una aplicación que:
+Quiero crear Repo Radar, una aplicación que:
 1. Scrape los repos trending de GitHub diariamente
 2. Use OpenAI para generar 3 ideas de negocio por repo
 3. Envíe un newsletter con las ideas
@@ -157,7 +157,7 @@ Quiero crear RepoRadar, una aplicación que:
 
 #### Estructura Inicial Generada
 ```
-RepoRadar/
+Repo Radar/
 ├── components/          # Componentes React
 │   ├── IdeaCard.js     # Tarjeta de idea
 │   ├── Layout.js       # Layout principal
@@ -496,7 +496,7 @@ useEffect(() => {
 ```javascript
 // pages/_app.js
 <Head>
-  <title>RepoRadar - Ideas de Negocio de GitHub Trending</title>
+  <title>Repo Radar - Ideas de Negocio de GitHub Trending</title>
   <meta name="description" content="Recibe 15 ideas de negocio..." />
   <meta property="og:image" content="/og-image.png" />
   <link rel="canonical" href="https://reporadar.com" />
@@ -638,7 +638,7 @@ vercel
 
 ## 📝 Conclusión
 
-RepoRadar demuestra que con las herramientas correctas (Claude Code + Next.js + servicios modernos), puedes construir y lanzar un producto funcional en horas, no semanas.
+Repo Radar demuestra que con las herramientas correctas (Claude Code + Next.js + servicios modernos), puedes construir y lanzar un producto funcional en horas, no semanas.
 
 La clave no es la complejidad técnica, sino:
 1. Elegir el stack correcto
@@ -669,7 +669,7 @@ La clave no es la complejidad técnica, sino:
 - Debug endpoints para diagnóstico
 
 **3. Mejoras de UI/UX**
-- Logo RepoRadar con animaciones flotantes
+- Logo Repo Radar con animaciones flotantes
 - Refinamientos en el diseño neobrutalist
 - Optimización de espaciado y tipografía
 - Favicon personalizado implementado
@@ -788,7 +788,7 @@ Claude Code no reemplaza a los developers, los transforma en arquitectos de prod
 
 #### Post 6: La Evolución (6 Meses Después)
 ```
-6 meses después de RepoRadar: Del experimento a la realidad
+6 meses después de Repo Radar: Del experimento a la realidad
 
 Agosto 2024: "5 horas para un MVP"
 Enero 2025: "25 horas para una plataforma enterprise"
@@ -811,7 +811,7 @@ Cada feature nueva sigue tomando 2 horas, no 2 semanas.
 
 #### Post 7: DevOps Lessons
 ```
-DevOps con IA: Lecciones inesperadas de RepoRadar
+DevOps con IA: Lecciones inesperadas de Repo Radar
 
 Antes pensaba: "IA = solo para código"
 Realidad: "IA = todo el lifecycle"
@@ -833,7 +833,7 @@ Thread 🧵👇
 
 #### Post 8: Performance Metrics
 ```
-RepoRadar: Métricas reales después de 6 meses
+Repo Radar: Métricas reales después de 6 meses
 
 📊 Technical:
 • 62+ commits de evolution continua

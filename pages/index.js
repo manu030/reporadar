@@ -1,18 +1,49 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
 import SubscribeForm from '../components/SubscribeForm';
 import IdeaCard from '../components/IdeaCard';
 import useTranslations from '../hooks/useTranslations';
 
-export default function Home({ latestIdeas, stats }) {
+export default function Home({ latestIdeas, stats, allDates }) {
   const t = useTranslations();
+  const router = useRouter();
   const [formattedDate, setFormattedDate] = useState('');
+  const [selectedDate, setSelectedDate] = useState(router.query.date || '');
+  const [currentIdeas, setCurrentIdeas] = useState(latestIdeas);
   
+  // Handle date changes
+  useEffect(() => {
+    if (router.query.date && router.query.date !== selectedDate) {
+      setSelectedDate(router.query.date);
+    }
+  }, [router.query.date]);
+
+  // Load ideas for selected date
+  useEffect(() => {
+    const loadIdeasForDate = async () => {
+      if (selectedDate && selectedDate !== getCurrentDate()) {
+        try {
+          const response = await fetch(`/api/ideas?date=${selectedDate}`);
+          const data = await response.json();
+          setCurrentIdeas(data.ideas || []);
+        } catch (error) {
+          console.error('Error loading ideas for date:', error);
+        }
+      } else {
+        setCurrentIdeas(latestIdeas);
+      }
+    };
+    
+    loadIdeasForDate();
+  }, [selectedDate, latestIdeas]);
+
   // Client-side date formatting to avoid hydration mismatch
   useEffect(() => {
-    if (latestIdeas.length > 0 && latestIdeas[0].processed_date) {
+    const ideasToFormat = currentIdeas.length > 0 ? currentIdeas : latestIdeas;
+    if (ideasToFormat.length > 0 && ideasToFormat[0].processed_date) {
       try {
-        const date = new Date(latestIdeas[0].processed_date);
+        const date = new Date(ideasToFormat[0].processed_date);
         const formatted = date.toLocaleDateString('es-ES', {
           day: 'numeric', 
           month: 'long', 
@@ -25,7 +56,19 @@ export default function Home({ latestIdeas, stats }) {
     } else {
       setFormattedDate('Próximamente');
     }
-  }, [latestIdeas, t.analysisDate]);
+  }, [currentIdeas, latestIdeas, t.analysisDate]);
+
+  const getCurrentDate = () => {
+    return new Date().toISOString().split('T')[0];
+  };
+
+  const handleDateChange = (date) => {
+    if (date === getCurrentDate()) {
+      router.push('/', undefined, { shallow: true });
+    } else {
+      router.push(`/?date=${date}`, undefined, { shallow: true });
+    }
+  };
   
   return (
     <Layout>
@@ -35,7 +78,7 @@ export default function Home({ latestIdeas, stats }) {
           <div className="text-center mb-8 sm:mb-10 md:mb-12">
             <img 
               src="/reporadar_logo.png" 
-              alt="RepoRadar Logo" 
+              alt="Repo Radar Logo" 
               className="w-24 h-24 mx-auto mb-4"
               style={{
                 animation: 'float 3s ease-in-out infinite'
@@ -63,14 +106,40 @@ export default function Home({ latestIdeas, stats }) {
             <h2 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-primary mb-3 sm:mb-4">
               💡 {t.latestIdeas}
             </h2>
-            <p className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-text px-2">
+            <p className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-text px-2 mb-4">
               {formattedDate || 'Próximamente'}
             </p>
+            
+            {/* Date Navigation */}
+            {allDates && allDates.length > 1 && (
+              <div className="max-w-md mx-auto mb-6">
+                <select
+                  value={selectedDate || getCurrentDate()}
+                  onChange={(e) => handleDateChange(e.target.value)}
+                  className="input-brutal w-full text-center font-semibold"
+                >
+                  <option value={getCurrentDate()}>Hoy - Últimas ideas</option>
+                  {allDates.filter(date => date !== getCurrentDate()).map(date => {
+                    const dateObj = new Date(date);
+                    const formatted = dateObj.toLocaleDateString('es-ES', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric'
+                    });
+                    return (
+                      <option key={date} value={date}>
+                        {formatted}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+            )}
           </div>
 
-          {latestIdeas.length > 0 ? (
+          {currentIdeas.length > 0 ? (
             <div className="space-y-6 sm:space-y-8">
-              {latestIdeas.map((repo, index) => (
+              {currentIdeas.map((repo, index) => (
                 <IdeaCard 
                   key={repo.repo_id || `repo-${index}`} 
                   repo={repo} 
@@ -131,6 +200,9 @@ export async function getServerSideProps() {
     const analysis = new DailyAnalysis();
     const stats = await analysis.getStats();
     
+    // Obtener fechas disponibles para navegación
+    const allDates = await db.getAvailableDates();
+    
     await db.close();
     
     // Serialize Firebase Timestamps and handle undefined values recursively
@@ -171,7 +243,8 @@ export async function getServerSideProps() {
     return {
       props: {
         latestIdeas: normalizedIdeas,
-        stats: stats || null
+        stats: stats || null,
+        allDates: allDates || []
       }
     };
     
@@ -181,7 +254,8 @@ export async function getServerSideProps() {
     return {
       props: {
         latestIdeas: [],
-        stats: null
+        stats: null,
+        allDates: []
       }
     };
   }

@@ -51,14 +51,14 @@ Responde solo con JSON válido siguiendo el formato especificado.
 
 ### Newsletter Diaria
 ```
-📊 RepoRadar Daily - {date}
+📊 Repo Radar Daily - {date}
 
 Hoy analizamos estos {repo_count} repositorios trending de GitHub:
 
 {repo_sections}
 
 ---
-RepoRadar | Cancelar suscripción: {unsubscribe_url}
+Repo Radar | Cancelar suscripción: {unsubscribe_url}
 ```
 
 ### Sección por Repositorio
@@ -74,7 +74,7 @@ RepoRadar | Cancelar suscripción: {unsubscribe_url}
 
 ### Email de Confirmación
 ```
-¡Bienvenido/a a RepoRadar! 🎉
+¡Bienvenido/a a Repo Radar! 🎉
 
 Te has suscrito exitosamente a nuestro newsletter diario.
 
@@ -83,21 +83,21 @@ Cada mañana recibirás análisis de los repositorios más trending de GitHub co
 Tu primer newsletter llegará mañana.
 
 ---
-RepoRadar | Cancelar suscripción: {unsubscribe_url}
+Repo Radar | Cancelar suscripción: {unsubscribe_url}
 ```
 
 ### Email de Despedida
 ```
-Hemos cancelado tu suscripción a RepoRadar.
+Hemos cancelado tu suscripción a Repo Radar.
 
 Ya no recibirás nuestros newsletters diarios.
 
 Si cambias de opinión, puedes suscribirte nuevamente en: https://reporadar.com
 
-¡Gracias por haber sido parte de RepoRadar!
+¡Gracias por haber sido parte de Repo Radar!
 
 ---
-RepoRadar Team
+Repo Radar Team
 ```
 
 ## Prompts de Validación

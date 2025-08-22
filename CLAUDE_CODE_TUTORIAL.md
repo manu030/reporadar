@@ -1,4 +1,4 @@
-# 🤖 Tutorial Completo: Construyendo RepoRadar con Claude Code
+# 🤖 Tutorial Completo: Construyendo Repo Radar con Claude Code
 
 ## Introducción: ¿Qué es Claude Code?
 
@@ -43,7 +43,7 @@ npm install -g @anthropic/claude-code
 
 #### 1.1 Crear directorio y abrir Claude Code
 ```bash
-mkdir RepoRadar
+mkdir Repo-Radar
 cd RepoRadar
 claude code .
 ```
@@ -51,7 +51,7 @@ claude code .
 #### 1.2 Primer Prompt - Arquitectura General
 ```
 PROMPT #1:
-"Quiero crear RepoRadar, una aplicación web que:
+"Quiero crear Repo Radar, una aplicación web que:
 1. Scrape los 5 repos más trending de GitHub cada día
 2. Use OpenAI para generar 3 ideas de negocio por cada repo
 3. Guarde todo en una base de datos SQLite

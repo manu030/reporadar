@@ -44,7 +44,7 @@ export default function AdminPanel({ initialStats, initialUsers, initialIdeas, a
     return (
       <>
         <Head>
-          <title>Admin - RepoRadar</title>
+          <title>Admin - Repo Radar</title>
           <meta name="robots" content="noindex, nofollow" />
           <link rel="icon" type="image/png" href="/favicon.png" />
           <link rel="shortcut icon" type="image/png" href="/favicon.png" />
@@ -80,7 +80,7 @@ export default function AdminPanel({ initialStats, initialUsers, initialIdeas, a
   return (
     <>
       <Head>
-        <title>Admin Panel - RepoRadar</title>
+        <title>Admin Panel - Repo Radar</title>
         <meta name="robots" content="noindex, nofollow" />
         <link rel="icon" type="image/png" href="/favicon.png" />
         <link rel="shortcut icon" type="image/png" href="/favicon.png" />
