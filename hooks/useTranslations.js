@@ -22,7 +22,7 @@ const translations = {
     freeForever: 'Gratis para siempre',
     
     // Ideas section
-    latestIdeas: 'Últimas ideas generadas',
+    latestIdeas: 'Últimas Ideas de Negocio Generadas',
     analysisDate: 'Análisis del',
     businessIdeas: 'Ideas de negocio',
     analyzed: 'Analizado:',
@@ -79,7 +79,7 @@ const translations = {
     freeForever: 'Free forever',
     
     // Ideas section
-    latestIdeas: 'Latest generated ideas',
+    latestIdeas: 'Latest Business Ideas Generated',
     analysisDate: 'Analysis from',
     businessIdeas: 'Business ideas',
     analyzed: 'Analyzed:',
