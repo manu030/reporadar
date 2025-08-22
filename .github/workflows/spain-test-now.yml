@@ -32,6 +32,7 @@ jobs:
           echo "FIREBASE_PROJECT_ID exists: ${{ secrets.FIREBASE_PROJECT_ID != '' }}"
           echo "FIREBASE_CLIENT_EMAIL exists: ${{ secrets.FIREBASE_CLIENT_EMAIL != '' }}"
           echo "OPENAI_API_KEY exists: ${{ secrets.OPENAI_API_KEY != '' }}"
+          echo "OPENROUTER_API_KEY exists: ${{ secrets.OPENROUTER_API_KEY != '' }}"
           echo "RESEND_API_KEY exists: ${{ secrets.RESEND_API_KEY != '' }}"
           
           echo "Repository: ${{ github.repository }}"
