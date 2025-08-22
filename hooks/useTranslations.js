@@ -2,8 +2,12 @@ import { useRouter } from 'next/router';
 
 const translations = {
   es: {
+    // SEO meta
+    pageTitle: 'Repo Radar | Ideas de Negocio desde GitHub Trending Diario',
+    pageDescription: 'Descubre ideas de negocio basadas en los repositorios más trending de GitHub. Análisis diario con inteligencia artificial para emprendedores.',
+    
     // Hero section
-    title: 'Repo Radar',
+    title: 'Repo Radar: Ideas de Negocio desde GitHub Trending',
     heroDescription: 'Descubre ideas de negocio basadas en los repositorios más trending de GitHub con',
     heroHighlight: 'análisis diario de inteligencia artificial.',
     
@@ -55,8 +59,12 @@ const translations = {
   },
   
   en: {
+    // SEO meta
+    pageTitle: 'Repo Radar | Business Ideas from Daily GitHub Trending Analysis',
+    pageDescription: 'Discover business ideas based on GitHub\'s most trending repositories. Daily AI analysis for entrepreneurs and startup founders.',
+    
     // Hero section
-    title: 'Repo Radar',
+    title: 'Repo Radar: Business Ideas from GitHub Trending',
     heroDescription: 'Discover business ideas based on GitHub\'s most trending repositories with',
     heroHighlight: 'daily artificial intelligence analysis.',
     

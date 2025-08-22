@@ -170,14 +170,15 @@ class DailyAnalysis {
             savedCount++;
           }
         } else {
-          // Si el repo ya existía, obtener su ID
-          const existingRepo = await this.db.get(
-            'SELECT id FROM processed_repos WHERE repo_name = ? AND processed_date = ?',
-            [result.repo.name, this.today]
-          );
+          // Si el repo ya existía, obtener su ID usando Firebase
+          const repoQuery = await this.db.db.collection('processed_repos')
+            .where('repo_name', '==', result.repo.name)
+            .where('processed_date', '==', this.today)
+            .limit(1)
+            .get();
           
-          if (existingRepo) {
-            await this.db.addIdeas(existingRepo.id, result.ideas, this.today);
+          if (!repoQuery.empty) {
+            await this.db.addIdeas(repoQuery.docs[0].id, result.ideas, this.today);
             savedCount++;
           }
         }
