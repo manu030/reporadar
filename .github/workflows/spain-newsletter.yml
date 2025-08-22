@@ -12,6 +12,10 @@ on:
         default: 'false'
         type: boolean
 
+permissions:
+  contents: read
+  actions: read
+
 jobs:
   spain-newsletter:
     runs-on: ubuntu-latest
