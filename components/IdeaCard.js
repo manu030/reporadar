@@ -235,9 +235,6 @@ export default function IdeaCard({ repo, ideas }) {
                                 : '⭐ Medio'
                               }
                             </span>
-                            <span className="text-gray-text text-xs sm:text-sm font-medium">
-                              {ideaData.idea_difficulty}
-                            </span>
                           </div>
                         </div>
                       </div>
