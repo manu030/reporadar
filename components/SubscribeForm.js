@@ -98,7 +98,6 @@ export default function SubscribeForm() {
       </form>
 
       <div className="mt-4 sm:mt-6 text-xs sm:text-sm text-center space-y-2">
-        <p className="text-gray-text">{t.freeForever}</p>
         <button
           onClick={() => setShowFeedback(true)}
           className="text-accent hover:text-primary font-semibold underline transition-colors"
