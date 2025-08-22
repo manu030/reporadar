@@ -94,38 +94,20 @@ class DailyAnalysis {
 
   async getExistingAnalysis() {
     const repos = await this.db.getLatestIdeas();
+    
+    // Convert Firebase repo data to mailer-expected format
     return repos.map(repo => {
-      // Get the stored ideas structure which should be {es: [...], en: [...]}
-      let storedIdeas = repo.ideas;
-      
-      // Convert to expected format if needed
-      let ideas = {
-        es: [],
-        en: []
-      };
-      
-      if (storedIdeas && typeof storedIdeas === 'object') {
-        if (Array.isArray(storedIdeas)) {
-          // Old format: ideas is directly an array (assume Spanish)
-          ideas.es = storedIdeas;
-          ideas.en = storedIdeas; // Fallback, should be translated later
-        } else if (storedIdeas.es || storedIdeas.en) {
-          // New format: ideas is {es: [...], en: [...]}
-          ideas.es = Array.isArray(storedIdeas.es) ? storedIdeas.es : [];
-          ideas.en = Array.isArray(storedIdeas.en) ? storedIdeas.en : [];
-        }
-      }
-      
+      // Return repo data in the format expected by mailer
+      // The mailer expects: { repo_name, repo_url, repo_description, stars, language, ideas }
       return {
-        repo: {
-          name: repo.repo_name,
-          url: repo.repo_url,
-          description: repo.repo_description,
-          stars: repo.stars,
-          language: repo.language
-        },
-        ideas: ideas,
-        success: true
+        repo_name: repo.repo_name,
+        repo_url: repo.repo_url,
+        repo_description: repo.repo_description,
+        stars: repo.stars,
+        language: repo.language,
+        ideas: repo.ideas, // Keep original ideas structure from Firebase
+        processed_date: repo.processed_date,
+        created_at: repo.created_at
       };
     });
   }
