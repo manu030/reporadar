@@ -1,0 +1,73 @@
+name: Spain Newsletter Test (Auto)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  secrets: read
+
+jobs:
+  spain-newsletter-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Debug secrets availability
+        run: |
+          echo "Checking if secrets are properly configured..."
+          echo "FIREBASE_PROJECT_ID exists: ${{ secrets.FIREBASE_PROJECT_ID != '' }}"
+          echo "FIREBASE_CLIENT_EMAIL exists: ${{ secrets.FIREBASE_CLIENT_EMAIL != '' }}"
+          echo "OPENAI_API_KEY exists: ${{ secrets.OPENAI_API_KEY != '' }}"
+          echo "RESEND_API_KEY exists: ${{ secrets.RESEND_API_KEY != '' }}"
+          
+          echo "Repository: ${{ github.repository }}"
+          echo "Workflow: ${{ github.workflow }}"
+        
+      - name: Initialize database
+        run: npm run init-db
+        env:
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_PRIVATE_KEY_ID: ${{ secrets.FIREBASE_PRIVATE_KEY_ID }}
+          FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
+          FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
+          FIREBASE_CLIENT_ID: ${{ secrets.FIREBASE_CLIENT_ID }}
+          FIREBASE_CLIENT_X509_CERT_URL: ${{ secrets.FIREBASE_CLIENT_X509_CERT_URL }}
+        
+      - name: Run Spain newsletter (TEST MODE)
+        run: |
+          echo "🧪 Running Spain newsletter in test mode..."
+          npm run spain-newsletter
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
+          NEXT_PUBLIC_BASE_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_PRIVATE_KEY_ID: ${{ secrets.FIREBASE_PRIVATE_KEY_ID }}
+          FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
+          FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
+          FIREBASE_CLIENT_ID: ${{ secrets.FIREBASE_CLIENT_ID }}
+          FIREBASE_CLIENT_X509_CERT_URL: ${{ secrets.FIREBASE_CLIENT_X509_CERT_URL }}
+          FORCE_ANALYSIS: true
+          
+      - name: Upload database artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: spain-test-database-${{ github.run_number }}
+          path: data/database.sqlite
+          retention-days: 7
