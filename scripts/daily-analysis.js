@@ -151,38 +151,9 @@ class DailyAnalysis {
 
     for (const result of analysisResults) {
       try {
-        // Guardar repositorio
-        const repoResult = await this.db.addProcessedRepo({
-          name: result.repo.name,
-          url: result.repo.url,
-          description: result.repo.description,
-          stars: result.repo.stars,
-          language: result.repo.language,
-          date: this.today
-        });
-
-        // Si el repo se insertó correctamente, guardar ideas
-        if (repoResult.changes > 0) {
-          // Usar el ID retornado por la inserción
-          const repoId = repoResult.id;
-          if (repoId) {
-            await this.db.addIdeas(repoId, result.ideas, this.today);
-            savedCount++;
-          }
-        } else {
-          // Si el repo ya existía, obtener su ID usando Firebase
-          const repoQuery = await this.db.db.collection('processed_repos')
-            .where('repo_name', '==', result.repo.name)
-            .where('processed_date', '==', this.today)
-            .limit(1)
-            .get();
-          
-          if (!repoQuery.empty) {
-            await this.db.addIdeas(repoQuery.docs[0].id, result.ideas, this.today);
-            savedCount++;
-          }
-        }
-
+        // LEAN: Save repo with ideas in single operation
+        await this.db.saveRepoWithIdeas(result.repo, result.ideas, this.today);
+        savedCount++;
       } catch (error) {
         console.error(`❌ Error guardando ${result.repo.name}:`, error.message);
       }
