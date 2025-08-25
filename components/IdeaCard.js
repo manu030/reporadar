@@ -184,7 +184,16 @@ const translateAndEnhanceDescription = (repoName, originalDescription, _language
   return normalizeDots(`${enhanced}. ${starsContext}`);
 };
 
-export default function IdeaCard({ repo, ideas }) {
+// Function to slugify repo name for URL anchor
+const slugifyRepoName = (name) => {
+  if (!name) return '';
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+};
+
+export default function IdeaCard({ repo, ideas, index }) {
   const [expandedIdea, setExpandedIdea] = useState(null);
   const [translatedDescription, setTranslatedDescription] = useState(null);
   const [isTranslating, setIsTranslating] = useState(false);
@@ -222,8 +231,11 @@ export default function IdeaCard({ repo, ideas }) {
     handleTranslation();
   }, [repo.repo_description, locale, translatedDescription, isTranslating]);
 
+  // Create unique ID for this repo card using repo name or index
+  const repoId = `repo-${slugifyRepoName(repo.repo_name) || index}`;
+
   return (
-    <div className="card-brutal mb-4 sm:mb-6">
+    <div id={repoId} className="card-brutal mb-4 sm:mb-6">
       <div className="flex flex-col space-y-4 mb-4 sm:mb-6">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between sm:space-y-0 space-y-3">
           <div className="flex-1">

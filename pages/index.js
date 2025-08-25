@@ -100,7 +100,7 @@ export default function Home({ latestIdeas, stats, allDates }) {
 
 
       {/* Latest Ideas Section */}
-      <section className="py-8 sm:py-12 md:py-16" style={{backgroundColor: '#F3F4F6'}}>
+      <section id="ideas" className="py-8 sm:py-12 md:py-16" style={{backgroundColor: '#F3F4F6'}}>
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-8 sm:mb-10 md:mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-primary mb-3 sm:mb-4">
@@ -144,6 +144,7 @@ export default function Home({ latestIdeas, stats, allDates }) {
                   key={repo.repo_id || `repo-${index}`} 
                   repo={repo} 
                   ideas={Array.isArray(repo.ideas) ? repo.ideas : []} 
+                  index={index}
                 />
               ))}
             </div>
