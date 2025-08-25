@@ -1,77 +1,83 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import useTranslations from '../hooks/useTranslations';
+import { getDifficultyBadge, normalizeIdeaData, getStarContext } from '../utils/ideaHelpers';
+
+// Pre-compiled translation patterns for better performance
+const TRANSLATION_PATTERNS = [
+  { regex: /open-source/gi, replacement: { es: 'código abierto', en: 'open-source' }},
+  { regex: /framework/gi, replacement: { es: 'framework', en: 'framework' }},
+  { regex: /Self hosted/gi, replacement: { es: 'Auto-hospedado', en: 'Self hosted' }}
+];
+
+// Utility function for consistent dot normalization
+const normalizeDots = (text) => text.replace(/\.(\s*\.)+/g, '.');
 
 // Función para traducir y mejorar descripciones de repos
-const translateAndEnhanceDescription = (repoName, originalDescription, language, stars, locale) => {
-  // If English, return original description with minimal enhancement
-  if (locale === 'en') {
-    const starsContext = stars > 50000 ? '⭐ Very popular in the community' : 
-                        stars > 10000 ? '🌟 Popular among developers' : 
-                        '🚀 Emerging project';
-    
-    return `${originalDescription}. ${starsContext}`.replace(/\.\./, '.');
+// Secure HTML cleaning function
+const cleanHtmlDescription = (html) => {
+  if (!html || typeof html !== 'string') {
+    return '';
   }
   
-  // Spanish translations for popular repos
+  // More comprehensive HTML cleaning
+  return html
+    // Remove all HTML tags (including malicious ones)
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+    .replace(/<[^>]*>/g, '')
+    // Decode HTML entities safely
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;/g, "'")
+    .replace(/&#x2F;/g, '/')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/&nbsp;/g, ' ')
+    // Clean up whitespace
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
+const translateAndEnhanceDescription = (repoName, originalDescription, _language, stars, locale) => {
+  // Input validation
+  if (!originalDescription || typeof originalDescription !== 'string') {
+    return locale === 'en' ? 'No description available' : 'Descripción no disponible';
+  }
+  
+  // Secure HTML cleaning with input validation
+  const cleanDescription = cleanHtmlDescription(originalDescription);
+  
+  // If English, return original description with minimal enhancement
+  if (locale === 'en') {
+    const starsContext = getStarContext(stars, locale);
+    return normalizeDots(`${cleanDescription}. ${starsContext}`);
+  }
+  
+  // Spanish translations for popular repos (keep only essential ones)
   const repoKey = repoName.toLowerCase();
   const translations = {
     'microsoft/terminal': 'Nueva terminal moderna de Windows con pestañas, temas personalizables y características avanzadas para desarrolladores. Reemplaza al Command Prompt tradicional.',
     'openai/whisper': 'Sistema de reconocimiento de voz de OpenAI entrenado con 680.000 horas de audio. Transforma audio a texto con alta precisión en múltiples idiomas.',
-    'puppeteer/puppeteer': 'API de JavaScript para controlar navegadores Chrome/Firefox sin interfaz. Permite automatizar testing, scraping web y generación de PDFs.',
     'vercel/next.js': 'Framework React para producción con características como renderizado híbrido, optimización automática de imágenes y routing basado en archivos.',
     'huggingface/transformers': 'Biblioteca Python para modelos de procesamiento de lenguaje natural (NLP) pre-entrenados. Incluye BERT, GPT, T5 y miles de modelos más.',
-    'tailwindlabs/tailwindcss': 'Framework CSS utility-first que permite crear diseños personalizados rápidamente usando clases predefinidas en lugar de CSS personalizado.',
-    'bitwarden/clients': 'Aplicaciones cliente del gestor de contraseñas Bitwarden para web, extensiones de navegador, escritorio y línea de comandos.',
-    'leantime/leantime': 'Sistema de gestión de proyectos diseñado específicamente para personas con TDAH, autismo y dislexia. Enfoque simplificado en objetivos.',
-    'simstudioai/sim': 'Constructor visual de workflows para agentes de IA. Interfaz intuitiva para crear y desplegar modelos de lenguaje grandes (LLMs) sin código.',
-    'moeru-ai/airi': 'Compañero virtual AI auto-hospedado. Sistema de contenedor de "almas waifu" para interacciones con personajes de IA en tu propio servidor.'
+    'tailwindlabs/tailwindcss': 'Framework CSS utility-first que permite crear diseños personalizados rápidamente usando clases predefinidas en lugar de CSS personalizado.'
   };
   
   if (translations[repoKey]) {
     return translations[repoKey];
   }
   
-  // Traducción genérica mejorada
-  let enhanced = originalDescription;
+  // Apply pre-compiled translation patterns efficiently
+  let enhanced = cleanDescription;
   
-  // Traducciones comunes
-  const commonTranslations = {
-    'JavaScript API for': 'API de JavaScript para',
-    'The new Windows': 'La nueva',
-    'Self hosted': 'Auto-hospedado',
-    'open-source': 'código abierto',
-    'framework for': 'framework para',
-    'client apps': 'aplicaciones cliente',
-    'utility-first CSS framework': 'framework CSS utility-first',
-    'project management system': 'sistema de gestión de proyectos',
-    'AI agent workflow builder': 'constructor de workflows para agentes IA',
-    'State-of-the-art Machine Learning': 'Aprendizaje automático de última generación',
-    'Robust Speech Recognition': 'Reconocimiento de voz robusto',
-    'Goals focused': 'Enfocado en objetivos'
-  };
-  
-  Object.entries(commonTranslations).forEach(([en, es]) => {
-    enhanced = enhanced.replace(new RegExp(en, 'gi'), es);
+  TRANSLATION_PATTERNS.forEach(({ regex, replacement }) => {
+    enhanced = enhanced.replace(regex, replacement.es);
   });
   
-  // Añadir contexto basado en el lenguaje y popularidad
-  const languageContext = {
-    'TypeScript': 'Desarrollado en TypeScript',
-    'JavaScript': 'Herramienta JavaScript',
-    'Python': 'Biblioteca Python',
-    'Vue': 'Aplicación Vue.js', 
-    'C++': 'Software nativo C++',
-    'PHP': 'Aplicación web PHP',
-    'Go': 'Herramienta Go',
-    'Rust': 'Software Rust'
-  };
-  
-  const starsContext = stars > 50000 ? '⭐ Muy popular en la comunidad' : 
-                      stars > 10000 ? '🌟 Popular entre desarrolladores' : 
-                      '🚀 Proyecto emergente';
-  
-  return `${enhanced}. ${languageContext[language] || ''} ${starsContext}.`.replace(/\.\s+\./, '.');
+  // Add simple context
+  const starsContext = getStarContext(stars, locale);
+  return normalizeDots(`${enhanced}. ${starsContext}`);
 };
 
 export default function IdeaCard({ repo, ideas }) {
@@ -128,24 +134,9 @@ export default function IdeaCard({ repo, ideas }) {
           <div className="space-y-2 sm:space-y-3">
             {ideas.map((idea, index) => {
               const isExpanded = expandedIdea === index;
-              // Manejar ambos formatos: objeto completo o string simple
-              const ideaData = typeof idea === 'string' 
-                ? { 
-                    idea_oneliner: idea,
-                    idea_problem: 'Problema por definir',
-                    idea_solution: 'Solución por definir',
-                    idea_business_model: 'Modelo por definir',
-                    idea_difficulty: 'Medio - Legacy data'
-                  }
-                : {
-                    // Support both old format (idea_*) and new format (*)
-                    idea_oneliner: idea.idea_oneliner || idea.oneliner,
-                    idea_description: idea.idea_description || idea.description,
-                    idea_problem: idea.idea_problem || idea.problem,
-                    idea_solution: idea.idea_solution || idea.solution,
-                    idea_business_model: idea.idea_business_model || idea.business_model,
-                    idea_difficulty: idea.idea_difficulty || idea.difficulty
-                  };
+              // Use the improved data normalization helper
+              const ideaData = normalizeIdeaData(idea, t);
+              const difficultyBadge = getDifficultyBadge(ideaData.idea_difficulty, locale, t);
               
               return (
                 <div 
@@ -154,7 +145,10 @@ export default function IdeaCard({ repo, ideas }) {
                 >
                   <button
                     onClick={() => toggleIdea(index)}
-                    className="w-full p-3 sm:p-4 text-left hover:bg-gray-200 transition-colors duration-150 focus:outline-none focus:bg-gray-200 active:bg-gray-300"
+                    aria-expanded={isExpanded}
+                    aria-describedby={`idea-content-${index}`}
+                    aria-label={`${isExpanded ? t.collapseIdea : t.expandIdea} ${t.businessIdea} ${index + 1}: ${ideaData.idea_oneliner}`}
+                    className="w-full p-3 sm:p-4 text-left hover:bg-gray-200 transition-colors duration-150 focus:outline-none focus:bg-gray-200 active:bg-gray-300 focus:ring-2 focus:ring-primary focus:ring-offset-2"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-start flex-1">
@@ -162,7 +156,7 @@ export default function IdeaCard({ repo, ideas }) {
                           {index + 1}
                         </span>
                         <div className="flex-1 min-w-0">
-                          <p className="text-primary font-extrabold text-base sm:text-lg leading-tight sm:leading-normal pr-2">
+                          <p id={`idea-title-${index}`} className="text-primary font-extrabold text-base sm:text-lg leading-tight sm:leading-normal pr-2">
                             {ideaData.idea_oneliner}
                           </p>
                           {(ideaData.idea_description || ideaData.description) && (
@@ -172,19 +166,13 @@ export default function IdeaCard({ repo, ideas }) {
                           )}
                           <div className="mt-1 sm:mt-2">
                             <div className="flex items-center gap-2">
-                              <span className={`font-semibold px-2 sm:px-3 py-1 text-xs sm:text-sm flex items-center gap-1 border-2 border-primary shadow-brutal-sm rounded-sm ${
-                                ideaData.idea_difficulty?.toLowerCase().includes('fácil') 
-                                  ? 'bg-success text-primary' 
-                                  : ideaData.idea_difficulty?.toLowerCase().includes('difícil')
-                                  ? 'bg-accent text-primary'
-                                  : 'bg-warning text-primary'
-                              }`}>
-                                {ideaData.idea_difficulty?.toLowerCase().includes('fácil') 
-                                  ? <>⚡ Fácil</>
-                                  : ideaData.idea_difficulty?.toLowerCase().includes('difícil')
-                                  ? <>🔥 Difícil</>
-                                  : <>⭐ Medio</>
-                                }
+                              <span 
+                                className={`font-semibold px-2 sm:px-3 py-1 text-xs sm:text-sm flex items-center gap-1 border-2 border-primary shadow-brutal-sm rounded-sm ${difficultyBadge.bgColor} text-primary`}
+                                role="status"
+                                aria-label={`${t.difficultyLevel}: ${difficultyBadge.text}`}
+                              >
+                                <span aria-hidden="true">{difficultyBadge.emoji}</span>
+                                <span>{difficultyBadge.text}</span>
                               </span>
                             </div>
                           </div>
@@ -192,15 +180,23 @@ export default function IdeaCard({ repo, ideas }) {
                       </div>
                       
                       <div className="ml-2 sm:ml-4 flex-shrink-0">
-                        <span className="text-primary font-extrabold text-xl sm:text-2xl">
+                        <span className="text-primary font-extrabold text-xl sm:text-2xl" aria-hidden="true">
                           {isExpanded ? '−' : '+'}
+                        </span>
+                        <span className="sr-only">
+                          {isExpanded ? t.clickToCollapse : t.clickToExpand}
                         </span>
                       </div>
                     </div>
                   </button>
                   
                   {isExpanded && (
-                    <div className="px-3 sm:px-4 pb-3 sm:pb-4 border-t-2 border-gray-300 bg-white">
+                    <div 
+                      id={`idea-content-${index}`}
+                      role="region"
+                      aria-labelledby={`idea-title-${index}`}
+                      className="px-3 sm:px-4 pb-3 sm:pb-4 border-t-2 border-gray-300 bg-white"
+                    >
                       <div className="pt-3 sm:pt-4 space-y-3 sm:space-y-4">
                         <div>
                           <h6 className="font-extrabold text-primary mb-2 flex items-center text-sm sm:text-base">
@@ -231,19 +227,13 @@ export default function IdeaCard({ repo, ideas }) {
                         
                         <div className="pt-2 border-t border-gray-200">
                           <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:items-center">
-                            <span className={`px-2 py-1 text-xs font-semibold border-2 border-primary shadow-brutal-sm text-center sm:text-left rounded-sm ${
-                              ideaData.idea_difficulty?.toLowerCase().includes('fácil') 
-                                ? 'bg-success text-primary' 
-                                : ideaData.idea_difficulty?.toLowerCase().includes('difícil')
-                                ? 'bg-accent text-primary'
-                                : 'bg-warning text-primary'
-                            }`}>
-                              {ideaData.idea_difficulty?.toLowerCase().includes('fácil') 
-                                ? '⚡ Fácil'
-                                : ideaData.idea_difficulty?.toLowerCase().includes('difícil')
-                                ? '🔥 Difícil'
-                                : '⭐ Medio'
-                              }
+                            <span 
+                              className={`px-2 py-1 text-xs font-semibold border-2 border-primary shadow-brutal-sm text-center sm:text-left rounded-sm ${difficultyBadge.bgColor} text-primary`}
+                              role="status"
+                              aria-label={`${t.difficultyLevel}: ${difficultyBadge.text}`}
+                            >
+                              <span aria-hidden="true">{difficultyBadge.emoji}</span>
+                              <span>{difficultyBadge.text}</span>
                             </span>
                           </div>
                         </div>
@@ -266,7 +256,7 @@ export default function IdeaCard({ repo, ideas }) {
 
       <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t-2 border-gray-300">
         <p className="text-xs sm:text-sm text-gray-text font-medium">
-          📅 {t.analyzed} {new Date(repo.processed_date).toLocaleDateString('es-ES', {
+          📅 {t.analyzed} {new Date(repo.processed_date).toLocaleDateString(locale === 'en' ? 'en-US' : 'es-ES', {
             day: 'numeric',
             month: 'long',
             year: 'numeric'

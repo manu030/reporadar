@@ -41,6 +41,20 @@ const translations = {
     medium: '⭐ Medio',
     hard: '🔥 Difícil',
     
+    // Fallback text for legacy data
+    problemTbd: 'Problema por definir',
+    solutionTbd: 'Solución por definir',
+    modelTbd: 'Modelo por definir',
+    noIdea: 'Idea no disponible',
+    
+    // Accessibility labels
+    difficultyLevel: 'Nivel de dificultad',
+    expandIdea: 'Expandir',
+    collapseIdea: 'Contraer',
+    businessIdea: 'idea de negocio',
+    clickToExpand: 'Haz clic para expandir detalles de la idea',
+    clickToCollapse: 'Haz clic para contraer detalles de la idea',
+    
     // CTA section
     ctaTitle: '¿Listo para descubrir tu próximo negocio?',
     ctaDescription: 'Únete a las personas que ya reciben ideas de negocio basadas en las últimas tendencias tech.',
@@ -99,6 +113,20 @@ const translations = {
     easy: '⚡ Easy',
     medium: '⭐ Medium',
     hard: '🔥 Hard',
+    
+    // Fallback text for legacy data
+    problemTbd: 'Problem to be defined',
+    solutionTbd: 'Solution to be defined',
+    modelTbd: 'Model to be defined',
+    noIdea: 'No idea available',
+    
+    // Accessibility labels
+    difficultyLevel: 'Difficulty level',
+    expandIdea: 'Expand',
+    collapseIdea: 'Collapse',
+    businessIdea: 'business idea',
+    clickToExpand: 'Click to expand idea details',
+    clickToCollapse: 'Click to collapse idea details',
     
     // CTA section
     ctaTitle: 'Ready to discover your next business?',

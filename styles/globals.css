@@ -28,6 +28,18 @@
 }
 
 @layer components {
+  /* Screen reader only utility for accessibility */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
   .btn-brutal {
     @apply bg-primary text-secondary font-semibold px-6 py-3 border-3 border-primary shadow-brutal transition-all duration-150 hover:shadow-brutal-sm hover:translate-x-1 hover:translate-y-1 hover:scale-105 rounded-sm;
   }
