@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import useTranslations from '../hooks/useTranslations';
 import { getDifficultyBadge, normalizeIdeaData, getStarContext } from '../utils/ideaHelpers';
@@ -13,20 +13,102 @@ const TRANSLATION_PATTERNS = [
 // Utility function for consistent dot normalization
 const normalizeDots = (text) => text.replace(/\.(\s*\.)+/g, '.');
 
+// Function to detect if text needs translation
+const needsTranslation = (text, targetLocale) => {
+  if (!text || typeof text !== 'string' || text.length < 5) {
+    return false;
+  }
+  
+  // Detect Chinese characters (simplified and traditional)
+  const chineseRegex = /[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]/;
+  
+  // Detect Japanese characters (hiragana, katakana, kanji)
+  const japaneseRegex = /[\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/;
+  
+  // Detect Korean characters
+  const koreanRegex = /[\uac00-\ud7af]/;
+  
+  // Detect Russian/Cyrillic characters
+  const cyrillicRegex = /[\u0400-\u04ff]/;
+  
+  // Detect Arabic characters
+  const arabicRegex = /[\u0600-\u06ff]/;
+  
+  // If target is Spanish, translate non-Latin scripts or non-English text
+  if (targetLocale === 'es') {
+    const hasNonLatinScript = chineseRegex.test(text) || 
+                             japaneseRegex.test(text) || 
+                             koreanRegex.test(text) ||
+                             cyrillicRegex.test(text) ||
+                             arabicRegex.test(text);
+    
+    if (hasNonLatinScript) {
+      return true;
+    }
+  }
+  
+  // If target is English, translate non-English text
+  if (targetLocale === 'en') {
+    const hasNonLatinScript = chineseRegex.test(text) || 
+                             japaneseRegex.test(text) || 
+                             koreanRegex.test(text) ||
+                             cyrillicRegex.test(text) ||
+                             arabicRegex.test(text);
+    
+    if (hasNonLatinScript) {
+      return true;
+    }
+  }
+  
+  return false;
+};
+
+// Function to translate text using AI
+const translateDescription = async (text, targetLocale) => {
+  try {
+    const targetLanguage = targetLocale === 'es' ? 'Spanish' : 'English';
+    
+    const response = await fetch('/api/translate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text: text,
+        targetLanguage: targetLanguage
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Translation failed');
+    }
+    
+    const data = await response.json();
+    return data.translation || text; // Fallback to original if no translation
+  } catch (error) {
+    console.warn('Translation failed:', error.message);
+    return text; // Fallback to original text
+  }
+};
+
 // Función para traducir y mejorar descripciones de repos
-// Secure HTML cleaning function
+// Enhanced HTML cleaning function for repository descriptions
 const cleanHtmlDescription = (html) => {
   if (!html || typeof html !== 'string') {
     return '';
   }
   
-  // More comprehensive HTML cleaning
-  return html
-    // Remove all HTML tags (including malicious ones)
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
-    .replace(/<[^>]*>/g, '')
-    // Decode HTML entities safely
+  let cleaned = html;
+  
+  // Remove script and style tags first (security)
+  cleaned = cleaned.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  cleaned = cleaned.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
+  
+  // Remove all HTML tags completely
+  cleaned = cleaned.replace(/<[^>]*>/g, '');
+  
+  // Decode common HTML entities
+  cleaned = cleaned
     .replace(/&quot;/g, '"')
     .replace(/&#x27;/g, "'")
     .replace(/&#x2F;/g, '/')
@@ -34,9 +116,31 @@ const cleanHtmlDescription = (html) => {
     .replace(/&gt;/g, '>')
     .replace(/&amp;/g, '&')
     .replace(/&nbsp;/g, ' ')
-    // Clean up whitespace
+    .replace(/&#39;/g, "'")
+    .replace(/&#34;/g, '"');
+  
+  // Remove markdown-style artifacts
+  cleaned = cleaned.replace(/!\[.*?\]\(.*?\)/g, ''); // ![alt](url)
+  cleaned = cleaned.replace(/\[.*?\]\(.*?\)/g, ''); // [text](url)
+  
+  // Clean up excessive whitespace and special characters
+  cleaned = cleaned
     .replace(/\s+/g, ' ')
+    .replace(/[\r\n\t]/g, ' ')
     .trim();
+  
+  // If the result still has HTML artifacts, clean more aggressively
+  if (cleaned.includes('<') || cleaned.includes('>')) {
+    // More aggressive cleaning for malformed HTML
+    cleaned = cleaned.replace(/[<>]/g, '').replace(/align="[^"]*"/g, '').replace(/width="[^"]*"/g, '').replace(/src="[^"]*"/g, '');
+  }
+  
+  // If the result is still too short or empty, provide fallback
+  if (cleaned.length < 15) {
+    return 'Proyecto de código abierto innovador con gran potencial comercial';
+  }
+  
+  return cleaned;
 };
 
 const translateAndEnhanceDescription = (repoName, originalDescription, _language, stars, locale) => {
@@ -82,12 +186,41 @@ const translateAndEnhanceDescription = (repoName, originalDescription, _language
 
 export default function IdeaCard({ repo, ideas }) {
   const [expandedIdea, setExpandedIdea] = useState(null);
+  const [translatedDescription, setTranslatedDescription] = useState(null);
+  const [isTranslating, setIsTranslating] = useState(false);
   const t = useTranslations();
   const { locale } = useRouter();
 
   const toggleIdea = (index) => {
     setExpandedIdea(expandedIdea === index ? null : index);
   };
+
+  // Auto-translate description if needed
+  useEffect(() => {
+    const handleTranslation = async () => {
+      if (!repo.repo_description || isTranslating || translatedDescription) {
+        return;
+      }
+
+      const cleanDescription = cleanHtmlDescription(repo.repo_description);
+      
+      if (needsTranslation(cleanDescription, locale)) {
+        setIsTranslating(true);
+        try {
+          const translated = await translateDescription(cleanDescription, locale);
+          if (translated !== cleanDescription) {
+            setTranslatedDescription(translated);
+          }
+        } catch (error) {
+          console.warn('Translation failed:', error);
+        } finally {
+          setIsTranslating(false);
+        }
+      }
+    };
+
+    handleTranslation();
+  }, [repo.repo_description, locale, translatedDescription, isTranslating]);
 
   return (
     <div className="card-brutal mb-4 sm:mb-6">
@@ -108,7 +241,15 @@ export default function IdeaCard({ repo, ideas }) {
             </div>
             
             <p className="text-gray-text mb-3 sm:mb-4 leading-relaxed text-sm sm:text-base">
-              {translateAndEnhanceDescription(repo.repo_name, repo.repo_description, repo.language, repo.stars, locale)}
+              {isTranslating ? (
+                <span className="opacity-75">
+                  🔄 {locale === 'es' ? 'Traduciendo...' : 'Translating...'}
+                </span>
+              ) : (
+                translatedDescription 
+                  ? translateAndEnhanceDescription(repo.repo_name, translatedDescription, repo.language, repo.stars, locale)
+                  : translateAndEnhanceDescription(repo.repo_name, repo.repo_description, repo.language, repo.stars, locale)
+              )}
             </p>
           </div>
           

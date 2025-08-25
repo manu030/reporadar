@@ -14,6 +14,7 @@
     "test-mailer": "node scripts/test-mailer.js",
     "test-cron": "node scripts/test-cron.js",
     "clean-db": "node scripts/clean-database.js",
+    "web-daily-analysis": "node scripts/web-daily-analysis.js",
     "spain-newsletter": "node scripts/spain-newsletter.js",
     "usa-newsletter": "node scripts/usa-newsletter.js"
   },
